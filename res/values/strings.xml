@@ -1,0 +1,30 @@
+<resources>
+
+    <string name="app_name">FHEMswitch</string>
+    <string name="widget_name">FHEMswitch</string>
+    <string name="url_fhem_pl">URL fhem Webserver (optional)</string>
+    <string name="url_fhem_js">URL fhem node.js-Server</string>
+    <string name="ok">OK</string>
+    <string name="switchicon">Lampe</string>
+    <string name="save">Speichern</string>
+    <string name="error_header">Es ist ein Fehler aufgetreten</string>
+    <string name="getConfig">FHEM units einlesen</string>
+
+    <string name="switches">Schalter</string>
+    <string name="lightscenes">Szenarios</string>
+    <string name="values">Messwerte</string>
+    <string name="values2">Werte</string>
+    <string name="sel">Auwahl</string>
+    <string name="unit">FHEM Einheit</string>
+    <string name="name">Angezeigter Name</string>
+    <string name="command">Befehl</string>
+    <string name="noconn">Keine Verbindung zum Server</string>
+    <string name="initruns">Initialisierung läuft</string>
+    
+    <string-array name="commands">
+        <item>toggle</item>
+        <item>on</item>
+        <item>off</item>
+    </string-array>
+
+</resources>
