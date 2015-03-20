@@ -1,10 +1,12 @@
 package de.fehngarten.fhemswitch;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 import android.content.Context;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -43,6 +45,47 @@ public class ConfigLightsceneAdapter extends BaseAdapter
       return (long) position;
    }
 
+   public Boolean isDragable(int res)
+   {
+      Log.d("isDragable res", Integer.toString(res));
+      if (getItem(res).isHeader)
+      {
+         return false;
+      }
+      else
+      {
+         return true;
+      }
+   }
+ 
+   public int[] getBounds(int pos)
+   {
+      int[] bounds = new int[2];
+      
+      int startPos = 0;
+      int endPos = 9999;
+      
+      for (int i = 1; i < getCount();i++)
+      {
+         if (getItem(i).isHeader)
+         {
+            if (i < pos)
+            {
+               startPos = i;
+            }
+            else
+            {
+               endPos = i;
+               break;
+            }
+         }
+      }
+      
+      bounds[0] = startPos;
+      bounds[1] = endPos;
+      return bounds;
+   }
+   
    public View getView(int position, View convertView, ViewGroup parent)
    {
       View rowView = convertView;
@@ -116,6 +159,61 @@ public class ConfigLightsceneAdapter extends BaseAdapter
       return rowView;
    }
 
+   public void changeItems(int from, int to)
+   {
+      Log.i("change switch", Integer.toString(from) + " " + Integer.toString(to));
+      final ArrayList<ConfigLightsceneRow> lightsceneRowsTemp = new ArrayList<ConfigLightsceneRow>();
+      if (from > to)
+      {
+         for (int i = 0; i < ConfigMain.lightsceneRows.size(); i++)
+         {
+            if (i < to)
+            {
+               lightsceneRowsTemp.add(ConfigMain.lightsceneRows.get(i));
+            }
+            else if (i == to)
+            {
+               lightsceneRowsTemp.add(ConfigMain.lightsceneRows.get(from));
+            }
+            else if (i <= from)
+            {
+               lightsceneRowsTemp.add(ConfigMain.lightsceneRows.get(i - 1));
+            }
+            else
+            {
+               lightsceneRowsTemp.add(ConfigMain.lightsceneRows.get(i));
+            }
+         }
+      }
+      else if (from < to)
+      {
+         for (int i = 0; i < ConfigMain.lightsceneRows.size(); i++)
+         {
+            if (i < from)
+            {
+               lightsceneRowsTemp.add(ConfigMain.lightsceneRows.get(i));
+            }
+            else if (i < to)
+            {
+               lightsceneRowsTemp.add(ConfigMain.lightsceneRows.get(i + 1));
+            }
+            else if (i == to)
+            {
+               lightsceneRowsTemp.add(ConfigMain.lightsceneRows.get(from));
+            }
+            else
+            {
+               lightsceneRowsTemp.add(ConfigMain.lightsceneRows.get(i));
+            }
+         }
+      }
+      if (from != to)
+      {
+         ConfigMain.lightsceneRows = lightsceneRowsTemp;
+         notifyDataSetChanged();
+      }
+   }
+   
    private class LightsceneHolder
    {
       CheckBox lightscene_enabled;

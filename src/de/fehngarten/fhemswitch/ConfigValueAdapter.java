@@ -13,7 +13,6 @@ import android.widget.BaseAdapter;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
-import de.fehngarten.fhemswitch.R;
 
 class ConfigValueAdapter extends BaseAdapter
 {
@@ -108,6 +107,60 @@ class ConfigValueAdapter extends BaseAdapter
       });
 
       return rowView;
+   }
+
+   public void changeItems(int from, int to)
+   {
+      final ArrayList<ConfigValueRow> valueRowsTemp = new ArrayList<ConfigValueRow>();
+      if (from > to)
+      {
+         for (int i = 0; i < ConfigMain.valueRows.size(); i++)
+         {
+            if (i < to)
+            {
+               valueRowsTemp.add(ConfigMain.valueRows.get(i));
+            }
+            else if (i == to)
+            {
+               valueRowsTemp.add(ConfigMain.valueRows.get(from));
+            }
+            else if (i <= from)
+            {
+               valueRowsTemp.add(ConfigMain.valueRows.get(i - 1));
+            }
+            else
+            {
+               valueRowsTemp.add(ConfigMain.valueRows.get(i));
+            }
+         }
+      }
+      else if (from < to)
+      {
+         for (int i = 0; i < ConfigMain.valueRows.size(); i++)
+         {
+            if (i < from)
+            {
+               valueRowsTemp.add(ConfigMain.valueRows.get(i));
+            }
+            else if (i < to)
+            {
+               valueRowsTemp.add(ConfigMain.valueRows.get(i + 1));
+            }
+            else if (i == to)
+            {
+               valueRowsTemp.add(ConfigMain.valueRows.get(from));
+            }
+            else
+            {
+               valueRowsTemp.add(ConfigMain.valueRows.get(i));
+            }
+         }
+      }
+      if (from != to)
+      {
+         ConfigMain.valueRows = valueRowsTemp;
+         notifyDataSetChanged();
+      }
    }
 
    private class ValueHolder

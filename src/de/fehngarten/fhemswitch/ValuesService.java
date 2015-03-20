@@ -1,8 +1,8 @@
 package de.fehngarten.fhemswitch;
 
 import android.content.Intent;
-//import android.util.Log;
 import android.widget.RemoteViewsService;
+//import android.util.Log;
 
 public class ValuesService extends RemoteViewsService
 {

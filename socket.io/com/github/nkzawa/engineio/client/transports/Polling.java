@@ -1,16 +1,16 @@
 package com.github.nkzawa.engineio.client.transports;
 
 
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.logging.Logger;
+
 import com.github.nkzawa.engineio.client.Transport;
 import com.github.nkzawa.engineio.parser.Packet;
 import com.github.nkzawa.engineio.parser.Parser;
 import com.github.nkzawa.parseqs.ParseQS;
 import com.github.nkzawa.thread.EventThread;
-
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.logging.Logger;
 
 abstract public class Polling extends Transport {
 

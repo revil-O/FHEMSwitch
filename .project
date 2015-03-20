@@ -3,6 +3,7 @@
 	<name>FHEMSwitches</name>
 	<comment></comment>
 	<projects>
+		<project>drag-and-drop-list</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

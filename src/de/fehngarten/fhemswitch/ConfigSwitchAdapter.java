@@ -14,9 +14,9 @@ import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.BaseAdapter;
 import android.widget.CheckBox;
 import android.widget.EditText;
-import android.widget.TextView;
 import android.widget.Spinner;
-import de.fehngarten.fhemswitch.R;
+import android.widget.TextView;
+import android.util.Log;
 
 class ConfigSwitchAdapter extends BaseAdapter
 {
@@ -60,6 +60,7 @@ class ConfigSwitchAdapter extends BaseAdapter
          rowView = inflater.inflate(R.layout.config_switch_row, parent, false);
          rowView.setTag(switchHolder);
          switchHolder.switch_unit = (TextView) rowView.findViewById(R.id.config_switch_unit);
+         //switchHolder.switch_unit = (TextView) rowView.findViewById(R.id.drag_handle);
          switchHolder.switch_name = (EditText) rowView.findViewById(R.id.config_switch_name);
          switchHolder.switch_enabled = (CheckBox) rowView.findViewById(R.id.config_switch_enabled);
          switchHolder.switch_cmd = (Spinner) rowView.findViewById(R.id.config_switch_cmd);
@@ -128,6 +129,61 @@ class ConfigSwitchAdapter extends BaseAdapter
       });
 
       return rowView;
+   }
+
+   public void changeItems(int from, int to)
+   {
+      Log.i("change switch", Integer.toString(from) + " " + Integer.toString(to));
+      final ArrayList<ConfigSwitchRow> switchRowsTemp = new ArrayList<ConfigSwitchRow>();
+      if (from > to)
+      {
+         for (int i = 0; i < ConfigMain.switchRows.size(); i++)
+         {
+            if (i < to)
+            {
+               switchRowsTemp.add(ConfigMain.switchRows.get(i));
+            }
+            else if (i == to)
+            {
+               switchRowsTemp.add(ConfigMain.switchRows.get(from));
+            }
+            else if (i <= from)
+            {
+               switchRowsTemp.add(ConfigMain.switchRows.get(i - 1));
+            }
+            else
+            {
+               switchRowsTemp.add(ConfigMain.switchRows.get(i));
+            }
+         }
+      }
+      else if (from < to)
+      {
+         for (int i = 0; i < ConfigMain.switchRows.size(); i++)
+         {
+            if (i < from)
+            {
+               switchRowsTemp.add(ConfigMain.switchRows.get(i));
+            }
+            else if (i < to)
+            {
+               switchRowsTemp.add(ConfigMain.switchRows.get(i + 1));
+            }
+            else if (i == to)
+            {
+               switchRowsTemp.add(ConfigMain.switchRows.get(from));
+            }
+            else
+            {
+               switchRowsTemp.add(ConfigMain.switchRows.get(i));
+            }
+         }
+      }
+      if (from != to)
+      {
+         ConfigMain.switchRows = switchRowsTemp;
+         notifyDataSetChanged();
+      }
    }
 
    private int getSpinnerIndex(Spinner spinner, String myString)

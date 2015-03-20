@@ -1,7 +1,6 @@
 package de.fehngarten.fhemswitch;
 
 import java.io.FileInputStream;
-import android.view.View;
 import java.io.FileNotFoundException;
 import java.io.ObjectInputStream;
 import java.util.ArrayList;
@@ -26,6 +25,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.util.Log;
+import android.view.View;
 import android.widget.RemoteViews;
 
 import com.github.nkzawa.emitter.Emitter;

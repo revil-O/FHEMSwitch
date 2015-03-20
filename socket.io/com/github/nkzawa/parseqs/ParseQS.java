@@ -1,10 +1,10 @@
 package com.github.nkzawa.parseqs;
 
 
-import com.github.nkzawa.global.Global;
-
 import java.util.HashMap;
 import java.util.Map;
+
+import com.github.nkzawa.global.Global;
 
 public class ParseQS {
 

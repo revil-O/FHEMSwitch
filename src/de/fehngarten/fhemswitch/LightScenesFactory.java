@@ -6,9 +6,9 @@ import android.graphics.Typeface;
 import android.os.Bundle;
 import android.text.SpannableString;
 import android.text.style.StyleSpan;
-//import android.util.Log;
 import android.widget.RemoteViews;
 import android.widget.RemoteViewsService;
+//import android.util.Log;
 
 class LightScenesFactory implements RemoteViewsService.RemoteViewsFactory
 {

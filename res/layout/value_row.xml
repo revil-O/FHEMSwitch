@@ -7,9 +7,9 @@
 
     <TextView
         android:id="@+id/value_name"
-        android:layout_marginTop="8dp"
-        android:layout_marginLeft="8dp"
-        android:layout_marginBottom="8dp"
+        android:layout_marginTop="6dp"
+        android:layout_marginLeft="6dp"
+        android:layout_marginBottom="6dp"
         android:layout_height="wrap_content"
         android:layout_width="wrap_content"  
         android:layout_alignParentLeft="true"      
@@ -20,9 +20,9 @@
 
     <TextView
         android:id="@+id/value_value"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="8dp"
-        android:layout_marginRight="8dp"
+        android:layout_marginTop="6dp"
+        android:layout_marginBottom="6dp"
+        android:layout_marginRight="6dp"
         android:layout_height="wrap_content"
         android:layout_width="wrap_content" 
         android:layout_alignParentRight="true"       

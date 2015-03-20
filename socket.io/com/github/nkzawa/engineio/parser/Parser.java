@@ -1,14 +1,14 @@
 package com.github.nkzawa.engineio.parser;
 
 
-import com.github.nkzawa.utf8.UTF8;
-import com.github.nkzawa.utf8.UTF8Exception;
-
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import com.github.nkzawa.utf8.UTF8;
+import com.github.nkzawa.utf8.UTF8Exception;
 
 public class Parser {
 

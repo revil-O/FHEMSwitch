@@ -5,8 +5,8 @@ import android.appwidget.AppWidgetProvider;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-//import android.util.Log;
 import android.net.Uri;
+import android.util.Log;
 
 public class WidgetProvider extends AppWidgetProvider
 {
@@ -20,7 +20,7 @@ public class WidgetProvider extends AppWidgetProvider
 
    public void onReceive(Context context, Intent intent)
    {
-      //Log.i("trace", "onReiceive startet by " + intent.getAction());
+      Log.d("trace", "onReiceive startet by " + intent.getAction());
       // super.onReceive(context, intent);
       // make sure the user has actually installed a widget
       // before starting the update service

@@ -1,20 +1,25 @@
 package com.github.nkzawa.engineio.client.transports;
 
 
-import com.github.nkzawa.engineio.client.Transport;
-import com.github.nkzawa.engineio.parser.Packet;
-import com.github.nkzawa.engineio.parser.Parser;
-import com.github.nkzawa.parseqs.ParseQS;
-import com.github.nkzawa.thread.EventThread;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.ByteBuffer;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.TreeMap;
+
 import org.java_websocket.client.DefaultSSLWebSocketClientFactory;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.drafts.Draft_17;
 import org.java_websocket.handshake.ServerHandshake;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.nio.ByteBuffer;
-import java.util.*;
+import com.github.nkzawa.engineio.client.Transport;
+import com.github.nkzawa.engineio.parser.Packet;
+import com.github.nkzawa.engineio.parser.Parser;
+import com.github.nkzawa.parseqs.ParseQS;
+import com.github.nkzawa.thread.EventThread;
 
 public class WebSocket extends Transport {
 

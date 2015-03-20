@@ -1,15 +1,16 @@
 package com.github.nkzawa.socketio.client;
 
 
-import com.github.nkzawa.socketio.parser.Parser;
-
-import javax.net.ssl.SSLContext;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
+
+import javax.net.ssl.SSLContext;
+
+import com.github.nkzawa.socketio.parser.Parser;
 
 
 public class IO {

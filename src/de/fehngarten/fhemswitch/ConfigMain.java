@@ -9,30 +9,36 @@ import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.app.Activity;
-import android.appwidget.AppWidgetManager;
 import android.app.AlertDialog;
+import android.appwidget.AppWidgetManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Point;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.view.ViewGroup;
 
 import com.github.nkzawa.socketio.client.Ack;
+import com.mobeta.android.dslv.DragSortController;
+import com.mobeta.android.dslv.DragSortListView;
 
 import de.fehngarten.fhemswitch.MyLightScenes.MyLightScene;
 import de.fehngarten.fhemswitch.MyLightScenes.MyLightScene.Member;
@@ -153,7 +159,7 @@ public class ConfigMain extends Activity
       // If they gave us an intent without the widget id, just bail.
       if (mAppWidgetId == AppWidgetManager.INVALID_APPWIDGET_ID)
       {
-         finish();
+         //finish();
       }
    }
 
@@ -221,55 +227,49 @@ public class ConfigMain extends Activity
    private void getAllSwitches(MySocket mySocket)
    {
       switchRows = new ArrayList<ConfigSwitchRow>();
-      ListView l = (ListView) findViewById(R.id.switches);
+      DragSortListView l = (DragSortListView) findViewById(R.id.switches);
       configSwitchAdapter = new ConfigSwitchAdapter(this, R.layout.config_switch_row);
       l.setAdapter(configSwitchAdapter);
+      l.setDropListener(onDropSwitch);
+      l.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
+      l.setDragHandleId(R.id.config_switch_unit);
 
       mySocket.socket.emit("getAllSwitches", new Ack()
       {
          @Override
          public void call(Object... args)
          {
-            Log.i("get allSwitches", args[0].toString());
+            //Log.i("get allSwitches", args[0].toString());
 
             JSONArray JSONswitches = (JSONArray) args[0];
-            for (int i = 0, size = JSONswitches.length(); i < size; i++)
+
+            ArrayList<String> switchesFHEM = convertJSONarray(JSONswitches);
+            ArrayList<String> switchesConfig = new ArrayList<String>();
+
+            for (MySwitch mySwitch : configData.switches)
             {
-               try
+               if (switchesFHEM.contains(mySwitch.unit))
                {
-                  String unit = JSONswitches.getString(i);
-                  MySwitch mySwitch = configData.isInSwitches(unit);
-                  String name;
-                  String cmd;
-                  Boolean enabled;
-                  if (mySwitch == null)
-                  {
-                     mySwitch = configData.isInSwitchesDisabled(unit);
-                     if (mySwitch != null)
-                     {
-                        name = mySwitch.name;
-                        cmd = mySwitch.cmd;
-                     }
-                     else
-                     {
-                        name = unit;
-                        cmd = "toggle";
-                     }
-                     enabled = false;
-                  }
-                  else
-                  {
-                     name = mySwitch.name;
-                     cmd = mySwitch.cmd;
-                     enabled = true;
-                  }
-                  switchRows.add(new ConfigSwitchRow(unit, name, enabled, cmd));
-               }
-               catch (JSONException e)
-               {
-                  e.printStackTrace();
+                  switchRows.add(new ConfigSwitchRow(mySwitch.unit, mySwitch.name, true, mySwitch.cmd));
+                  switchesConfig.add(mySwitch.unit);
                }
             }
+            for (MySwitch mySwitch : configData.switchesDisabled)
+            {
+               if (switchesFHEM.contains(mySwitch.unit))
+               {
+                  switchRows.add(new ConfigSwitchRow(mySwitch.unit, mySwitch.name, false, mySwitch.cmd));
+                  switchesConfig.add(mySwitch.unit);
+               }
+            }
+            for (String unit : switchesFHEM)
+            {
+               if (!switchesConfig.contains(unit))
+               {
+                  switchRows.add(new ConfigSwitchRow(unit, unit, false, "toggle"));
+               }
+            }
+
             runOnUiThread(new Runnable()
             {
                @Override
@@ -287,9 +287,15 @@ public class ConfigMain extends Activity
    {
       lightsceneRows = new ArrayList<ConfigLightsceneRow>();
       final ArrayList<ConfigLightsceneRow> lightsceneRowsTemp = new ArrayList<ConfigLightsceneRow>();
-      ListView l = (ListView) findViewById(R.id.lightscenes);
+      DragSortListView l = (DragSortListView) findViewById(R.id.lightscenes);
       configLightsceneAdapter = new ConfigLightsceneAdapter(this, R.layout.config_lightscene_row);
       l.setAdapter(configLightsceneAdapter);
+      l.setDropListener(onDropLightscene);
+
+      // make and set controller on dslv
+      LightscenesSectionController c = new LightscenesSectionController(l, configLightsceneAdapter);
+      l.setFloatViewManager(c);
+      l.setOnTouchListener(c);
 
       mySocket.socket.emit("getAllUnitsOf", "LightScene", new Ack()
       {
@@ -339,8 +345,9 @@ public class ConfigMain extends Activity
                               String name;
                               Boolean enabled;
                               String unit = JSONresponse.getString(i);
-                              if (unit.equals("")) continue;
-                                 
+                              if (unit.equals(""))
+                                 continue;
+
                               if (myLightScene != null)
                               {
                                  Member member = myLightScene.isMember(unit);
@@ -397,9 +404,12 @@ public class ConfigMain extends Activity
    {
       valueRows = new ArrayList<ConfigValueRow>();
 
-      ListView l = (ListView) findViewById(R.id.values);
+      DragSortListView l = (DragSortListView) findViewById(R.id.values);
       configValueAdapter = new ConfigValueAdapter(this, R.layout.config_value_row);
       l.setAdapter(configValueAdapter);
+      l.setDropListener(onDropValue);
+      l.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
+      l.setDragHandleId(R.id.config_value_unit);
 
       mySocket.socket.emit("getAllValues", new Ack()
       {
@@ -461,39 +471,6 @@ public class ConfigMain extends Activity
       });
    }
 
-   /*
-      private ArrayList<String> getMembers(JSONArray JSONresponse)
-      {
-         ArrayList<String> members = new ArrayList<String>();
-         Boolean ignore = true;
-         for (int i = 0, size = JSONresponse.length(); i < size; i++)
-         {
-            try
-            {
-               String line = JSONresponse.getString(i);
-               if (line.contains("Scenes:"))
-               {
-                  ignore = false;
-               }
-               else if (!ignore && line.contains("devices:"))
-               {
-                  break;
-               }
-               else if (!ignore && line.contains(":"))
-               {
-                  line = line.trim();
-                  String member = line.replace(":", "");
-                  members.add(member);
-               }
-            }
-            catch (JSONException e)
-            {
-               e.printStackTrace();
-            }
-         }
-         return members;
-      }
-   */
    private void saveConfig()
    {
       mySocket.socket.disconnect();
@@ -561,4 +538,51 @@ public class ConfigMain extends Activity
       params.height = totalHeight + (listView.getDividerHeight() * (listAdapter.getCount() - 1));
       listView.setLayoutParams(params);
    }
+
+   private ArrayList<String> convertJSONarray(JSONArray jsonArray)
+   {
+      ArrayList<String> arrayList = new ArrayList<String>();
+      for (int i = 0, size = jsonArray.length(); i < size; i++)
+      {
+         try
+         {
+            arrayList.add(jsonArray.getString(i));
+         }
+         catch (JSONException e)
+         {
+            e.printStackTrace();
+         }
+      }
+      return arrayList;
+   }
+
+   private DragSortListView.DropListener onDropSwitch = new DragSortListView.DropListener()
+   {
+      @Override
+      public void drop(int from, int to)
+      {
+         configSwitchAdapter.changeItems(from, to);
+      }
+   };
+
+   private DragSortListView.DropListener onDropLightscene = new DragSortListView.DropListener()
+   {
+      @Override
+      public void drop(int from, int to)
+      {
+         configLightsceneAdapter.changeItems(from, to);
+      }
+   };
+
+   private DragSortListView.DropListener onDropValue = new DragSortListView.DropListener()
+   {
+      @Override
+      public void drop(int from, int to)
+      {
+         configValueAdapter.changeItems(from, to);
+      }
+   };
+
+
+
 }

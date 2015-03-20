@@ -3,13 +3,13 @@ package de.fehngarten.fhemswitch;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log; 
 import android.widget.RemoteViews;
 import android.widget.RemoteViewsService.RemoteViewsFactory;
+//import android.util.Log; 
 
 class SwitchesFactory implements RemoteViewsFactory
 {
-   private static final String CLASSNAME = "SwitchesFactory.";
+   //private static final String CLASSNAME = "SwitchesFactory.";
    private Context mContext = null;
    //private List<MySwitch> switches = new ArrayList<MySwitch>();
 
@@ -36,8 +36,8 @@ class SwitchesFactory implements RemoteViewsFactory
    @Override
    public void onDataSetChanged()
    {
-      String methodname = "onDataSetChanged";
-      Log.d(CLASSNAME + methodname, "started");
+      //String methodname = "onDataSetChanged";
+      //Log.d(CLASSNAME + methodname, "started");
       //initData();
    }
 
@@ -59,7 +59,7 @@ class SwitchesFactory implements RemoteViewsFactory
    @Override
    public RemoteViews getViewAt(int position)
    {
-      Log.i("switches Position: " + position + " of " + WidgetService.configData.switches.size(),WidgetService.configData.switches.get(position).name);
+      //Log.i("switches Position: " + position + " of " + WidgetService.configData.switches.size(),WidgetService.configData.switches.get(position).name);
       RemoteViews mView = new RemoteViews(mContext.getPackageName(), R.layout.switch_row);
       mView.setTextViewText(R.id.switch_name, WidgetService.configData.switches.get(position).name);
       mView.setImageViewResource(R.id.switch_icon, WidgetService.icons.get(WidgetService.configData.switches.get(position).icon));

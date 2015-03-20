@@ -1,12 +1,13 @@
 package com.github.nkzawa.engineio.client.transports;
 
 
-import com.github.nkzawa.emitter.Emitter;
-import com.github.nkzawa.thread.EventThread;
-
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.ByteBuffer;
@@ -15,6 +16,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.logging.Logger;
+
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+
+import com.github.nkzawa.emitter.Emitter;
+import com.github.nkzawa.thread.EventThread;
 
 public class PollingXHR extends Polling {
 

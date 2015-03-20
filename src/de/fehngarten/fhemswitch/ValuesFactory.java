@@ -3,9 +3,9 @@ package de.fehngarten.fhemswitch;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-//import android.util.Log;
 import android.widget.RemoteViews;
 import android.widget.RemoteViewsService.RemoteViewsFactory;
+//import android.util.Log;
  
 class ValuesFactory implements RemoteViewsFactory
 {

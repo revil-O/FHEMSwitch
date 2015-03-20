@@ -1,13 +1,14 @@
 package com.github.nkzawa.engineio.client;
 
 
+import java.util.Map;
+
+import javax.net.ssl.SSLContext;
+
 import com.github.nkzawa.emitter.Emitter;
 import com.github.nkzawa.engineio.parser.Packet;
 import com.github.nkzawa.engineio.parser.Parser;
 import com.github.nkzawa.thread.EventThread;
-
-import javax.net.ssl.SSLContext;
-import java.util.Map;
 
 public abstract class Transport extends Emitter {
 

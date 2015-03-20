@@ -1,9 +1,6 @@
 package de.fehngarten.fhemswitch;
 
 import java.io.FileInputStream;
-
-import android.util.Log;
-import android.view.View;
 import java.io.FileNotFoundException;
 import java.io.ObjectInputStream;
 import java.util.ArrayList;
@@ -27,12 +24,14 @@ import android.net.Uri;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.PowerManager;
-//import android.util.Log;
+import android.view.View;
 import android.widget.RemoteViews;
 
 import com.github.nkzawa.emitter.Emitter;
+import com.github.nkzawa.socketio.client.Socket;
 
 import de.fehngarten.fhemswitch.MyLightScenes.MyLightScene;
+//import android.util.Log;
 
 public class WidgetService extends Service
 {
@@ -356,7 +355,7 @@ public class WidgetService extends Service
 
    private void setVisibility(String type)
    {
-      Log.i("type of setVisibility",type); 
+      //Log.i("type of setVisibility",type); 
       Context context = getApplicationContext();
       AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
       RemoteViews mView = new RemoteViews(context.getPackageName(), R.layout.main_layout);
@@ -373,6 +372,7 @@ public class WidgetService extends Service
          mView.setViewVisibility(R.id.switches, View.GONE);
          mView.setViewVisibility(R.id.lightscenes, View.GONE);
          mView.setViewVisibility(R.id.values, View.GONE);
+         mView.setTextViewText(R.id.noconn,getString(R.string.noconn));
       }
 
       for (int widgetId : allWidgetIds)
@@ -387,7 +387,7 @@ public class WidgetService extends Service
 
       mySocket = new MySocket(websocketUrl);
 
-      mySocket.socket.on("connect", new Emitter.Listener()
+      mySocket.socket.on(Socket.EVENT_CONNECT, new Emitter.Listener()
       {
          @Override
          public void call(Object... args)
@@ -402,6 +402,22 @@ public class WidgetService extends Service
                mySocket.requestValuesOnChange(lightScenesList);
                mySocket.requestValuesOnChange(valuesList);
                setVisibility("connected");
+            }
+            catch (NullPointerException e)
+            {
+               //ignore this exception
+            }
+         }
+      });
+      mySocket.socket.on(Socket.EVENT_DISCONNECT, new Emitter.Listener()
+      {
+         @Override
+         public void call(Object... args)
+         {
+            //Log.i("socket", "disconnected");
+            try
+            {
+               setVisibility("disconnected");
             }
             catch (NullPointerException e)
             {

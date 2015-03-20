@@ -1,6 +1,6 @@
 package de.fehngarten.fhemswitch;
 
-public class MySwitch 
+public class MySwitch
 {
    public String name;
    public String unit;
@@ -17,7 +17,15 @@ public class MySwitch
 
    public void setIcon(String icon)
    {
-      this.icon = icon;
+      if (icon.equals("on") || icon.equals("off"))
+      {
+         this.icon = icon;
+      }
+      else
+      {
+         this.icon = "undefined";
+      }
+
    }
 
    public String activateCmd()
