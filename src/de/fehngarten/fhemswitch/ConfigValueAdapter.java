@@ -1,6 +1,11 @@
 package de.fehngarten.fhemswitch;
 
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import android.content.Context;
 import android.text.Editable;
@@ -18,7 +23,7 @@ class ConfigValueAdapter extends BaseAdapter
 {
    Context mContext;
    int layoutResourceId;
-   ArrayList<ConfigValueRow> data = null;
+   ArrayList<ConfigValueRow> valueRows = null;
 
    public ConfigValueAdapter(Context mContext, int layoutResourceId)
    {
@@ -26,16 +31,55 @@ class ConfigValueAdapter extends BaseAdapter
       //super(mContext, layoutResourceId, data);
       this.layoutResourceId = layoutResourceId;
       this.mContext = mContext;
+      valueRows = new ArrayList<ConfigValueRow>();
    }
 
+   public void initData(JSONObject obj, List<MyValue> values, List<MyValue> valuesDisabled )
+   {
+      FHEMvalues mFHEMvalues = new FHEMvalues(obj);
+      ArrayList<String> valuesConfig = new ArrayList<String>();
+
+      for (MyValue myValue : values)
+      {
+         ConfigValueRow FHEMrow = mFHEMvalues.getValue(myValue.unit);
+         if (FHEMrow != null)
+         {
+            valueRows.add(new ConfigValueRow(myValue.unit, myValue.name, FHEMrow.value, true));
+            valuesConfig.add(myValue.unit);
+         }
+      }
+
+      for (MyValue myValue : valuesDisabled)
+      {
+         ConfigValueRow FHEMrow = mFHEMvalues.getValue(myValue.unit);
+         if (FHEMrow != null)
+         {
+            valueRows.add(new ConfigValueRow(myValue.unit, myValue.name, FHEMrow.value, false));
+            valuesConfig.add(myValue.unit);
+         }
+      }
+      for (ConfigValueRow FHEMrow : mFHEMvalues.getAllValues())
+      {
+         if (!valuesConfig.contains(FHEMrow.unit))
+         {
+            valueRows.add(new ConfigValueRow(FHEMrow.unit, FHEMrow.name, FHEMrow.value, false));
+         }
+      }
+   }
+
+   public ArrayList<ConfigValueRow> getData()
+   {
+      return valueRows;
+   }
+   
    public int getCount()
    {
-      return ConfigMain.valueRows.size();
+      return valueRows.size();
    }
 
    public ConfigValueRow getItem(int position)
    {
-      return ConfigMain.valueRows.get(position);
+      return valueRows.get(position);
    }
 
    public long getItemId(int position)
@@ -114,51 +158,51 @@ class ConfigValueAdapter extends BaseAdapter
       final ArrayList<ConfigValueRow> valueRowsTemp = new ArrayList<ConfigValueRow>();
       if (from > to)
       {
-         for (int i = 0; i < ConfigMain.valueRows.size(); i++)
+         for (int i = 0; i < valueRows.size(); i++)
          {
             if (i < to)
             {
-               valueRowsTemp.add(ConfigMain.valueRows.get(i));
+               valueRowsTemp.add(valueRows.get(i));
             }
             else if (i == to)
             {
-               valueRowsTemp.add(ConfigMain.valueRows.get(from));
+               valueRowsTemp.add(valueRows.get(from));
             }
             else if (i <= from)
             {
-               valueRowsTemp.add(ConfigMain.valueRows.get(i - 1));
+               valueRowsTemp.add(valueRows.get(i - 1));
             }
             else
             {
-               valueRowsTemp.add(ConfigMain.valueRows.get(i));
+               valueRowsTemp.add(valueRows.get(i));
             }
          }
       }
       else if (from < to)
       {
-         for (int i = 0; i < ConfigMain.valueRows.size(); i++)
+         for (int i = 0; i < valueRows.size(); i++)
          {
             if (i < from)
             {
-               valueRowsTemp.add(ConfigMain.valueRows.get(i));
+               valueRowsTemp.add(valueRows.get(i));
             }
             else if (i < to)
             {
-               valueRowsTemp.add(ConfigMain.valueRows.get(i + 1));
+               valueRowsTemp.add(valueRows.get(i + 1));
             }
             else if (i == to)
             {
-               valueRowsTemp.add(ConfigMain.valueRows.get(from));
+               valueRowsTemp.add(valueRows.get(from));
             }
             else
             {
-               valueRowsTemp.add(ConfigMain.valueRows.get(i));
+               valueRowsTemp.add(valueRows.get(i));
             }
          }
       }
       if (from != to)
       {
-         ConfigMain.valueRows = valueRowsTemp;
+         valueRows = valueRowsTemp;
          notifyDataSetChanged();
       }
    }
@@ -170,5 +214,43 @@ class ConfigValueAdapter extends BaseAdapter
       EditText value_name;
       TextView value_value;
       int ref;
+   }
+ 
+   public class FHEMvalues
+   {
+      private ArrayList<ConfigValueRow> valueRows = new ArrayList<ConfigValueRow>();
+      private FHEMvalues(JSONObject obj)
+      {
+         Iterator<String> iterator = obj.keys();
+         String unit = null;
+         while (iterator.hasNext())
+         {
+            unit = iterator.next();
+            String value = null;
+            try
+            {
+               value = obj.getString(unit);
+               valueRows.add(new ConfigValueRow(unit, unit, value, false));
+            }
+            catch (JSONException e)
+            {
+               e.printStackTrace();
+            }
+         }
+      }
+
+      public ConfigValueRow getValue(String unit)
+      {
+         for (ConfigValueRow configValue : valueRows)
+         {
+            if (configValue.unit.equals(unit)) { return configValue; }
+         }
+         return null; 
+      }
+      
+      public ArrayList<ConfigValueRow> getAllValues()
+      {
+         return valueRows;
+      }
    }
 }

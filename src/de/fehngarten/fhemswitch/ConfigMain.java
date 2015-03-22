@@ -9,9 +9,6 @@ import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -23,10 +20,8 @@ import android.appwidget.AppWidgetManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Point;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
@@ -37,11 +32,9 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.github.nkzawa.socketio.client.Ack;
-import com.mobeta.android.dslv.DragSortController;
 import com.mobeta.android.dslv.DragSortListView;
 
 import de.fehngarten.fhemswitch.MyLightScenes.MyLightScene;
-import de.fehngarten.fhemswitch.MyLightScenes.MyLightScene.Member;
 
 public class ConfigMain extends Activity
 {
@@ -49,19 +42,17 @@ public class ConfigMain extends Activity
    Button configOkButton2;
    int mAppWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID;
    private EditText urlpl, urljs;
-   private ConfigData configData;
+   public static ConfigData configData;
    private ConfigDataOnly configDataOnly;
    private MySocket mySocket;
-   private Boolean isLast = false;
-
-   public static ArrayList<ConfigSwitchRow> switchRows;
-   public static ArrayList<ConfigLightsceneRow> lightsceneRows;
-   public static ArrayList<ConfigValueRow> valueRows;
 
    public ConfigSwitchAdapter configSwitchAdapter;
    public ConfigLightsceneAdapter configLightsceneAdapter;
    public ConfigValueAdapter configValueAdapter;
 
+   public int lsCounter = 0;
+   public int lsSize = 0;
+   
    @Override
    protected void onCreate(Bundle savedInstanceState)
    {
@@ -226,7 +217,6 @@ public class ConfigMain extends Activity
 
    private void getAllSwitches(MySocket mySocket)
    {
-      switchRows = new ArrayList<ConfigSwitchRow>();
       DragSortListView l = (DragSortListView) findViewById(R.id.switches);
       configSwitchAdapter = new ConfigSwitchAdapter(this, R.layout.config_switch_row);
       l.setAdapter(configSwitchAdapter);
@@ -234,42 +224,14 @@ public class ConfigMain extends Activity
       l.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
       l.setDragHandleId(R.id.config_switch_unit);
 
+      // read switches from FHEM server
       mySocket.socket.emit("getAllSwitches", new Ack()
       {
          @Override
          public void call(Object... args)
          {
             //Log.i("get allSwitches", args[0].toString());
-
-            JSONArray JSONswitches = (JSONArray) args[0];
-
-            ArrayList<String> switchesFHEM = convertJSONarray(JSONswitches);
-            ArrayList<String> switchesConfig = new ArrayList<String>();
-
-            for (MySwitch mySwitch : configData.switches)
-            {
-               if (switchesFHEM.contains(mySwitch.unit))
-               {
-                  switchRows.add(new ConfigSwitchRow(mySwitch.unit, mySwitch.name, true, mySwitch.cmd));
-                  switchesConfig.add(mySwitch.unit);
-               }
-            }
-            for (MySwitch mySwitch : configData.switchesDisabled)
-            {
-               if (switchesFHEM.contains(mySwitch.unit))
-               {
-                  switchRows.add(new ConfigSwitchRow(mySwitch.unit, mySwitch.name, false, mySwitch.cmd));
-                  switchesConfig.add(mySwitch.unit);
-               }
-            }
-            for (String unit : switchesFHEM)
-            {
-               if (!switchesConfig.contains(unit))
-               {
-                  switchRows.add(new ConfigSwitchRow(unit, unit, false, "toggle"));
-               }
-            }
-
+            configSwitchAdapter.initData((JSONArray) args[0], configData.switches, configData.switchesDisabled);
             runOnUiThread(new Runnable()
             {
                @Override
@@ -285,125 +247,63 @@ public class ConfigMain extends Activity
 
    private void getAllLightscenes(final MySocket mySocket)
    {
-      lightsceneRows = new ArrayList<ConfigLightsceneRow>();
       final ArrayList<ConfigLightsceneRow> lightsceneRowsTemp = new ArrayList<ConfigLightsceneRow>();
+      
       DragSortListView l = (DragSortListView) findViewById(R.id.lightscenes);
       configLightsceneAdapter = new ConfigLightsceneAdapter(this, R.layout.config_lightscene_row);
       l.setAdapter(configLightsceneAdapter);
       l.setDropListener(onDropLightscene);
-
-      // make and set controller on dslv
       LightscenesSectionController c = new LightscenesSectionController(l, configLightsceneAdapter);
       l.setFloatViewManager(c);
-      l.setOnTouchListener(c);
+      //l.setOnTouchListener(c);
 
       mySocket.socket.emit("getAllUnitsOf", "LightScene", new Ack()
       {
          @Override
          public void call(Object... args)
          {
-            //JSONObject obj = (JSONObject) args[0];
-            JSONArray JSONlightscenes = (JSONArray) args[0];
-            try
+            ArrayList<String> lightscenesFHEM = convertJSONarray((JSONArray) args[0]);
+            
+            lsSize = lightscenesFHEM.size();
+            for (int i = 0; i < lsSize; i++)
             {
-               for (int i = 0, size = JSONlightscenes.length(); i < size; i++)
+               final String unit = lightscenesFHEM.get(i);
+               
+               mySocket.socket.emit("command", "get " + unit + " scenes", new Ack()
                {
-                  String unit = JSONlightscenes.getString(i);
-
-                  if (i == size - 1)
+                  @Override
+                  public void call(Object... args)
                   {
-                     isLast = true;
-                  }
-                  else
-                  {
-                     isLast = false;
-                  }
-                  final MyLightScene myLightScene = configData.isInLightScenes(unit);
-                  String name;
-                  if (myLightScene != null)
-                  {
-                     name = myLightScene.name;
-                  }
-                  else
-                  {
-                     name = unit;
-                  }
-                  final String SZname = name;
-                  final String SZunit = unit;
-                  mySocket.socket.emit("command", "get " + unit + " scenes", new Ack()
-                  {
-                     @Override
-                     public void call(Object... args)
+                     //Log.i("get allLightscenes", args[0].toString());
+                     lightsceneRowsTemp.add(new ConfigLightsceneRow(unit, unit, false, true));
+                     ArrayList<String> lightscenesMember = convertJSONarray((JSONArray) args[0]);
+                     for (String unit : lightscenesMember)
                      {
-                        lightsceneRowsTemp.add(new ConfigLightsceneRow(SZunit, SZname, false, true));
-                        //Log.i("get allLightscenes", args[0].toString());
-                        JSONArray JSONresponse = (JSONArray) args[0];
-                        for (int i = 0, size = JSONresponse.length(); i < size; i++)
-                        {
-                           try
-                           {
-                              String name;
-                              Boolean enabled;
-                              String unit = JSONresponse.getString(i);
-                              if (unit.equals(""))
-                                 continue;
-
-                              if (myLightScene != null)
-                              {
-                                 Member member = myLightScene.isMember(unit);
-                                 if (member == null)
-                                 {
-                                    name = unit;
-                                    enabled = false;
-                                 }
-                                 else
-                                 {
-                                    name = member.name;
-                                    enabled = member.enabled;
-                                 }
-                              }
-                              else
-                              {
-                                 name = unit;
-                                 enabled = false;
-                              }
-                              lightsceneRowsTemp.add(new ConfigLightsceneRow(unit, name, enabled, false));
-                           }
-                           catch (JSONException e)
-                           {
-                              e.printStackTrace();
-                           }
-                        }
-                        if (isLast)
-                        {
-                           runOnUiThread(new Runnable()
-                           {
-                              @Override
-                              public void run()
-                              {
-                                 lightsceneRows = lightsceneRowsTemp;
-                                 configLightsceneAdapter.notifyDataSetChanged();
-                                 setListViewHeightBasedOnChildren((ListView) findViewById(R.id.lightscenes));
-                              }
-                           });
-                        }
+                        lightsceneRowsTemp.add(new ConfigLightsceneRow(unit, unit, false, false));
                      }
-                  });
-               }
+                     lsCounter++;
+                     if (lsCounter == lsSize)
+                     {
+                        configLightsceneAdapter.initData(configData, lightsceneRowsTemp);
+                        runOnUiThread(new Runnable()
+                        {
+                           @Override
+                           public void run()
+                           {
+                              configLightsceneAdapter.notifyDataSetChanged();
+                              setListViewHeightBasedOnChildren((ListView) findViewById(R.id.lightscenes));
+                           }
+                        });
+                     }
+                  }
+               });
             }
-            catch (JSONException e)
-            {
-               e.printStackTrace();
-            }
-
          }
       });
    }
 
    private void getAllValues(final MySocket mySocket)
    {
-      valueRows = new ArrayList<ConfigValueRow>();
-
       DragSortListView l = (DragSortListView) findViewById(R.id.values);
       configValueAdapter = new ConfigValueAdapter(this, R.layout.config_value_row);
       l.setAdapter(configValueAdapter);
@@ -411,52 +311,14 @@ public class ConfigMain extends Activity
       l.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
       l.setDragHandleId(R.id.config_value_unit);
 
+      // read values from FHEM server
       mySocket.socket.emit("getAllValues", new Ack()
       {
          @Override
          public void call(Object... args)
          {
-            JSONObject obj = (JSONObject) args[0];
-            Iterator<String> iterator = obj.keys();
-            String unit = null;
-            while (iterator.hasNext())
-            {
-               unit = iterator.next();
-               String value = null;
-               try
-               {
-                  value = obj.getString(unit);
+            configValueAdapter.initData((JSONObject) args[0], configData.values, configData.valuesDisabled);
 
-                  String name;
-                  Boolean enabled = false;
-                  MyValue myValue = configData.isInValues(unit);
-                  if (myValue != null)
-                  {
-                     name = myValue.name;
-                     enabled = true;
-                  }
-                  else
-                  {
-                     myValue = configData.isInValuesDisabled(unit);
-                     if (myValue != null)
-                     {
-                        name = myValue.name;
-                        enabled = false;
-                     }
-                     else
-                     {
-                        name = unit;
-                        enabled = false;
-                     }
-                  }
-                  valueRows.add(new ConfigValueRow(unit, name, value, enabled));
-
-               }
-               catch (JSONException e)
-               {
-                  e.printStackTrace();
-               }
-            }
             runOnUiThread(new Runnable()
             {
                @Override
@@ -486,9 +348,9 @@ public class ConfigMain extends Activity
       configDataOnly = new ConfigDataOnly();
       configDataOnly.urljs = urljs.getText().toString();
       configDataOnly.urlpl = urlpl.getText().toString();
-      configDataOnly.switchRows = switchRows;
-      configDataOnly.lightsceneRows = lightsceneRows;
-      configDataOnly.valueRows = valueRows;
+      configDataOnly.switchRows = configSwitchAdapter.getData();
+      configDataOnly.lightsceneRows = configLightsceneAdapter.getData();
+      configDataOnly.valueRows = configValueAdapter.getData();
 
       try
       {
@@ -508,8 +370,6 @@ public class ConfigMain extends Activity
       Intent resultValue = new Intent();
       resultValue.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, mAppWidgetId);
       setResult(RESULT_OK, resultValue);
-      Log.i("ersteZeile Name", switchRows.get(0).name.toString());
-      Log.i("6. Zeile Name", switchRows.get(5).name.toString());
       ComponentName thisAppWidget = new ComponentName(context.getPackageName(), WidgetProvider.class.getName());
       Intent updateIntent = new Intent(context, WidgetProvider.class);
       int[] appWidgetIds = appWidgetManager.getAppWidgetIds(thisAppWidget);
@@ -539,23 +399,6 @@ public class ConfigMain extends Activity
       listView.setLayoutParams(params);
    }
 
-   private ArrayList<String> convertJSONarray(JSONArray jsonArray)
-   {
-      ArrayList<String> arrayList = new ArrayList<String>();
-      for (int i = 0, size = jsonArray.length(); i < size; i++)
-      {
-         try
-         {
-            arrayList.add(jsonArray.getString(i));
-         }
-         catch (JSONException e)
-         {
-            e.printStackTrace();
-         }
-      }
-      return arrayList;
-   }
-
    private DragSortListView.DropListener onDropSwitch = new DragSortListView.DropListener()
    {
       @Override
@@ -583,6 +426,20 @@ public class ConfigMain extends Activity
       }
    };
 
-
-
+   public static ArrayList<String> convertJSONarray(JSONArray jsonArray)
+   {
+      ArrayList<String> arrayList = new ArrayList<String>();
+      for (int i = 0, size = jsonArray.length(); i < size; i++)
+      {
+         try
+         {
+            arrayList.add(jsonArray.getString(i));
+         }
+         catch (JSONException e)
+         {
+            e.printStackTrace();
+         }
+      }
+      return arrayList;
+   }
 }

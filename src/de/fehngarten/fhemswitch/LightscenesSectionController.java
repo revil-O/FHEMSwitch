@@ -1,10 +1,9 @@
 package de.fehngarten.fhemswitch;
 
 import android.graphics.Point;
-import android.util.Log;
+//import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
 
 import com.mobeta.android.dslv.DragSortController;
 import com.mobeta.android.dslv.DragSortListView;
@@ -61,14 +60,13 @@ public class LightscenesSectionController extends DragSortController
    @Override
    public void onDragFloatView(View floatView, Point floatPoint, Point touchPoint)
    {
-      final int first = mDslv.getFirstVisiblePosition();
-      final int lvDivHeight = mDslv.getDividerHeight();
-
+      //final int first = mDslv.getFirstVisiblePosition();
+      //final int lvDivHeight = mDslv.getDividerHeight();
       if (origHeight == -1)
       {
          origHeight = floatView.getHeight();
       }
-
+/*
       if (touchPoint.x > mDslv.getWidth() / 2)
       {
          float scale = touchPoint.x - mDslv.getWidth() / 2;
@@ -78,29 +76,22 @@ public class LightscenesSectionController extends DragSortController
          Log.d("mobeta", "setting height " + lp.height);
          floatView.setLayoutParams(lp);
       }
-
+*/
       int[] bounds = configLightsceneAdapter.getBounds(mPos);
-      Log.i("bounds", Integer.toString(bounds[0]) + " " + Integer.toString(bounds[1]));
-
-      /*          View div = mDslv.getChildAt(mDivPos - first);
-
-                if (div != null) {
-                    if (mPos > mDivPos) {
-                        // don't allow floating View to go above
-                        // section divider
-                        final int limit = div.getBottom() + lvDivHeight;
-                        if (floatPoint.y < limit) {
-                            floatPoint.y = limit;
-                        }
-                    } else {
-                        // don't allow floating View to go below
-                        // section divider
-                        final int limit = div.getTop() - lvDivHeight - floatView.getHeight();
-                        if (floatPoint.y > limit) {
-                            floatPoint.y = limit;
-                        }
-                    }
-                }*/
+      
+      View top = mDslv.getChildAt(bounds[0]);
+      View bottom = mDslv.getChildAt(bounds[1]);
+      final int limitTop = top.getTop();
+      final int limitBottom = bottom.getBottom() - floatView.getHeight();
+      
+      if (floatPoint.y < limitTop )
+      {
+         floatPoint.y = limitTop;
+      }
+      else if (floatPoint.y > limitBottom )
+      {
+         floatPoint.y = limitBottom;
+      }
    }
 
    @Override

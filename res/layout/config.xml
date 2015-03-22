@@ -214,7 +214,7 @@
             xmlns:android="http://schemas.android.com/apk/res/android"
             xmlns:dslv="com.mobeta.android.dslv"
             android:id="@+id/lightscenes"
-            android:layout_width="wrap_content"
+            android:layout_width="594dp"
             android:layout_height="fill_parent"
             android:layout_margin="3dp"
             android:dividerHeight="1px"

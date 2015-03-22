@@ -1,6 +1,9 @@
 package de.fehngarten.fhemswitch;
 
 import java.util.ArrayList;
+import java.util.List;
+
+import org.json.JSONArray;
 
 import android.content.Context;
 import android.text.Editable;
@@ -16,13 +19,13 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.util.Log;
+//import android.util.Log;
 
 class ConfigSwitchAdapter extends BaseAdapter
 {
    Context mContext;
    int layoutResourceId;
-   ArrayList<ConfigSwitchRow> data = null;
+   ArrayList<ConfigSwitchRow> switchRows = null;
 
    public ConfigSwitchAdapter(Context mContext, int layoutResourceId)
    {
@@ -30,16 +33,52 @@ class ConfigSwitchAdapter extends BaseAdapter
       //super(mContext, layoutResourceId, data);
       this.layoutResourceId = layoutResourceId;
       this.mContext = mContext;
+      switchRows = new ArrayList<ConfigSwitchRow>();
    }
 
+   public void initData(JSONArray JSONswitches, List<MySwitch> switches, List<MySwitch> switchesDisabled)
+   {
+      ArrayList<String> switchesFHEM = ConfigMain.convertJSONarray(JSONswitches);
+      ArrayList<String> switchesConfig = new ArrayList<String>();
+
+      for (MySwitch mySwitch : switches)
+      {
+         if (switchesFHEM.contains(mySwitch.unit))
+         {
+            switchRows.add(new ConfigSwitchRow(mySwitch.unit, mySwitch.name, true, mySwitch.cmd));
+            switchesConfig.add(mySwitch.unit);
+         }
+      }
+      for (MySwitch mySwitch : switchesDisabled)
+      {
+         if (switchesFHEM.contains(mySwitch.unit))
+         {
+            switchRows.add(new ConfigSwitchRow(mySwitch.unit, mySwitch.name, false, mySwitch.cmd));
+            switchesConfig.add(mySwitch.unit);
+         }
+      }
+      for (String unit : switchesFHEM)
+      {
+         if (!switchesConfig.contains(unit))
+         {
+            switchRows.add(new ConfigSwitchRow(unit, unit, false, "toggle"));
+         }
+      }
+   }
+   
+   public ArrayList<ConfigSwitchRow> getData()
+   {
+      return switchRows;
+   }
+   
    public int getCount()
    {
-      return ConfigMain.switchRows.size();
+      return switchRows.size();
    }
 
    public ConfigSwitchRow getItem(int position)
    {
-      return ConfigMain.switchRows.get(position);
+      return switchRows.get(position);
    }
 
    public long getItemId(int position)
@@ -133,55 +172,55 @@ class ConfigSwitchAdapter extends BaseAdapter
 
    public void changeItems(int from, int to)
    {
-      Log.i("change switch", Integer.toString(from) + " " + Integer.toString(to));
+      //Log.i("change switch", Integer.toString(from) + " " + Integer.toString(to));
       final ArrayList<ConfigSwitchRow> switchRowsTemp = new ArrayList<ConfigSwitchRow>();
       if (from > to)
       {
-         for (int i = 0; i < ConfigMain.switchRows.size(); i++)
+         for (int i = 0; i < switchRows.size(); i++)
          {
             if (i < to)
             {
-               switchRowsTemp.add(ConfigMain.switchRows.get(i));
+               switchRowsTemp.add(switchRows.get(i));
             }
             else if (i == to)
             {
-               switchRowsTemp.add(ConfigMain.switchRows.get(from));
+               switchRowsTemp.add(switchRows.get(from));
             }
             else if (i <= from)
             {
-               switchRowsTemp.add(ConfigMain.switchRows.get(i - 1));
+               switchRowsTemp.add(switchRows.get(i - 1));
             }
             else
             {
-               switchRowsTemp.add(ConfigMain.switchRows.get(i));
+               switchRowsTemp.add(switchRows.get(i));
             }
          }
       }
       else if (from < to)
       {
-         for (int i = 0; i < ConfigMain.switchRows.size(); i++)
+         for (int i = 0; i < switchRows.size(); i++)
          {
             if (i < from)
             {
-               switchRowsTemp.add(ConfigMain.switchRows.get(i));
+               switchRowsTemp.add(switchRows.get(i));
             }
             else if (i < to)
             {
-               switchRowsTemp.add(ConfigMain.switchRows.get(i + 1));
+               switchRowsTemp.add(switchRows.get(i + 1));
             }
             else if (i == to)
             {
-               switchRowsTemp.add(ConfigMain.switchRows.get(from));
+               switchRowsTemp.add(switchRows.get(from));
             }
             else
             {
-               switchRowsTemp.add(ConfigMain.switchRows.get(i));
+               switchRowsTemp.add(switchRows.get(i));
             }
          }
       }
       if (from != to)
       {
-         ConfigMain.switchRows = switchRowsTemp;
+         switchRows = switchRowsTemp;
          notifyDataSetChanged();
       }
    }

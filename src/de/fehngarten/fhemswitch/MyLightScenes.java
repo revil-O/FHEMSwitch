@@ -80,13 +80,25 @@ public class MyLightScenes
       return cmd;
    }
 
+   public Boolean isLightScene(String unit)
+   {
+      for (MyLightScene lightScene : lightScenes)
+      {
+         if (lightScene.unit.equals(unit))
+         {
+            return true;
+         }
+      }
+      return false;
+   }
+   
    class MyLightScene
    {
       public String name;
       public String unit;
       public Boolean enabled;
 
-      private ArrayList<Member> members = new ArrayList<Member>();
+      public ArrayList<Member> members = new ArrayList<Member>();
 
       public MyLightScene(String name, String unit, Boolean enabled)
       {
@@ -105,16 +117,16 @@ public class MyLightScenes
          aggregate();
       } 
 
-      public Member isMember(String unit)
+      public Boolean isMember(String unit)
       {
          for (Member member : members)
          {
             if (member.unit.equals(unit))
             {
-               return member;
+               return true;
             }
          }
-         return null;
+         return false;
       }
       public void setActiv(String unit)
       {

@@ -14,8 +14,8 @@
     <string name="lightscenes">Szenarios</string>
     <string name="values">Messwerte</string>
     <string name="values2">Werte</string>
-    <string name="sel">Auwahl</string>
-    <string name="unit">FHEM Einheit</string>
+    <string name="sel">Auswahl</string>
+    <string name="unit">Name - sort by drag and drop</string>
     <string name="name">Angezeigter Name</string>
     <string name="command">Befehl</string>
     <string name="noconn">Keine Verbindung zum FHEM Server</string>
