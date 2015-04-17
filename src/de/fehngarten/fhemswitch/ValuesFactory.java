@@ -5,8 +5,9 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.widget.RemoteViews;
 import android.widget.RemoteViewsService.RemoteViewsFactory;
+
 //import android.util.Log;
- 
+
 class ValuesFactory implements RemoteViewsFactory
 {
    //private static final String CLASSNAME = "ValuesFactory.";
@@ -52,7 +53,15 @@ class ValuesFactory implements RemoteViewsFactory
    {
       //String methodname = "getCount";
       //Log.d(CLASSNAME + methodname, "values size: " + Integer.toString(values.size()));
-      return WidgetService.configData.values.size();
+
+      try
+      {
+         return WidgetService.configData.values.size();
+      }
+      catch (Exception e)
+      {
+         return (0);
+      }
    }
 
    @Override
@@ -62,7 +71,7 @@ class ValuesFactory implements RemoteViewsFactory
       RemoteViews mView = new RemoteViews(mContext.getPackageName(), R.layout.value_row);
       mView.setTextViewText(R.id.value_name, WidgetService.configData.values.get(position).name);
       mView.setTextViewText(R.id.value_value, WidgetService.configData.values.get(position).value);
-      
+
       if (position == 0)
       {
          mView.setInt(R.id.value_row, "setBackgroundResource", R.drawable.valuefirst);
@@ -82,7 +91,7 @@ class ValuesFactory implements RemoteViewsFactory
       bundle.putString(WidgetProvider.URL, WidgetService.fhemUrl + "?detail=" + WidgetService.configData.values.get(position).unit);
       fillInIntent.putExtras(bundle);
       mView.setOnClickFillInIntent(R.id.value_name, fillInIntent);
-      
+
       return mView;
    }
 
@@ -114,4 +123,3 @@ class ValuesFactory implements RemoteViewsFactory
       return false;
    }
 }
-

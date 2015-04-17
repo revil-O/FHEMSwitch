@@ -1,25 +1,30 @@
 <resources>
 
-    <string name="config_name">FHEMswitch Konfiguration</string>
+    <string name="config_name">FHEMswitch Configuration</string>
     <string name="widget_name">FHEMswitch</string>
-    <string name="url_fhem_pl">URL fhem Webserver (optional)</string>
-    <string name="url_fhem_js">URL fhem node.js-Server</string>
+    <string name="url_fhem_pl">URL FHEM webserver (optional)</string>
+    <string name="url_fhem_js">URL FHEM node.js server</string>
+    <string name="conn_pw">FHEM server password (optional)</string>
     <string name="ok">OK</string>
-    <string name="switchicon">Lampe</string>
-    <string name="save">Speichern</string>
-    <string name="error_header">Es ist ein Fehler aufgetreten</string>
-    <string name="getConfig">FHEM units einlesen</string>
+    <string name="switchicon">Lamp</string>
+    <string name="save">Save</string>
+    <string name="error_header">An error has occurred</string>
+    <string name="getConfig">get FHEM units</string>
 
-    <string name="switches">Schalter</string>
-    <string name="lightscenes">Szenarios</string>
-    <string name="values">Messwerte</string>
-    <string name="values2">Werte</string>
-    <string name="sel">Auswahl</string>
-    <string name="unit">Name - sort by drag and drop</string>
-    <string name="name">Angezeigter Name</string>
-    <string name="command">Befehl</string>
-    <string name="noconn">Keine Verbindung zum FHEM Server</string>
-    <string name="initruns">Initialisierung läuft</string>
+    <string name="switches">Switches</string>
+    <string name="lightscenes">Scenarios</string>
+    <string name="values">Values</string>
+    <string name="values2">Values</string>
+    <string name="sel">Select</string>
+    <string name="unit">Name - sort by drag &#038; drop</string>
+    <string name="name">Displayed Name</string>
+    <string name="command">Command</string>
+    <string name="noconn">No connection to FHEM server</string>
+    <string name="checkpw">Please check password</string>
+    <string name="initruns">Initialising runs</string>
+    <string name="urlerr">The typed URL is invalid</string>
+    <string name="urlcheck">please check URL</string>
+    <string name="onlinecheck">is this device online</string>
     
     <string-array name="commands">
         <item>toggle</item>

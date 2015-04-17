@@ -12,6 +12,7 @@ public class ConfigData
    public MyLightScenes lightScenes = new MyLightScenes();
    public List<MyValue> values = new ArrayList<MyValue>();
    public List<MyValue> valuesDisabled = new ArrayList<MyValue>();
+   public String connectionPW = "";
 
    public MySwitch isInSwitches(String unit)
    {

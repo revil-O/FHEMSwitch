@@ -1,6 +1,5 @@
 package de.fehngarten.fhemswitch;
 
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 
 import android.util.Log;
@@ -12,9 +11,9 @@ import com.github.nkzawa.socketio.client.Socket;
 public class MySocket
 {
    private static final String CLASSNAME = "MySocket.";
-   private IO.Options options;
+   private IO.Options options = new IO.Options();
 
-   public Socket socket;
+   public Socket socket = null;
 
    public MySocket(String url)
    {
@@ -22,23 +21,22 @@ public class MySocket
 
       try
       {
-
+         socket = null;
          //options.secure = true;
-         
          socket = IO.socket(url, options);        
          socket.connect();
       }
-      catch (URISyntaxException e1)
+      catch (Exception e1)
       {
-         e1.printStackTrace();
+         Log.e("socket error", e1.toString() );
       }
+      
       socket.on(Socket.EVENT_ERROR, new Emitter.Listener()
       {
          @Override
          public void call(Object... args)
          {
           Log.e("socket error", args[0].toString());
-
          }
       });
       socket.on(Socket.EVENT_CONNECT_ERROR, new Emitter.Listener()
@@ -47,7 +45,7 @@ public class MySocket
          public void call(Object... args)
          {
             Log.e("connection error", args[0].toString());
-            
+            socket.close();
          }
       });
    }
@@ -72,7 +70,4 @@ public class MySocket
    {
       socket.emit("commandNoResp", cmd);
    }
-
- 
-
 }

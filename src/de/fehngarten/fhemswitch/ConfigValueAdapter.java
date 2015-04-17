@@ -36,33 +36,38 @@ class ConfigValueAdapter extends BaseAdapter
 
    public void initData(JSONObject obj, List<MyValue> values, List<MyValue> valuesDisabled )
    {
+      valueRows = new ArrayList<ConfigValueRow>();
       FHEMvalues mFHEMvalues = new FHEMvalues(obj);
       ArrayList<String> valuesConfig = new ArrayList<String>();
+      ArrayList<String> allUnits = new ArrayList<String>();
 
       for (MyValue myValue : values)
       {
          ConfigValueRow FHEMrow = mFHEMvalues.getValue(myValue.unit);
-         if (FHEMrow != null)
+         if (FHEMrow != null && !allUnits.contains(myValue.unit))
          {
             valueRows.add(new ConfigValueRow(myValue.unit, myValue.name, FHEMrow.value, true));
             valuesConfig.add(myValue.unit);
+            allUnits.add(myValue.unit);
          }
       }
 
       for (MyValue myValue : valuesDisabled)
       {
          ConfigValueRow FHEMrow = mFHEMvalues.getValue(myValue.unit);
-         if (FHEMrow != null)
+         if (FHEMrow != null && !allUnits.contains(myValue.unit))
          {
             valueRows.add(new ConfigValueRow(myValue.unit, myValue.name, FHEMrow.value, false));
             valuesConfig.add(myValue.unit);
+            allUnits.add(myValue.unit);
          }
       }
       for (ConfigValueRow FHEMrow : mFHEMvalues.getAllValues())
       {
-         if (!valuesConfig.contains(FHEMrow.unit))
+         if (!valuesConfig.contains(FHEMrow.unit) && !allUnits.contains(FHEMrow.unit))
          {
             valueRows.add(new ConfigValueRow(FHEMrow.unit, FHEMrow.name, FHEMrow.value, false));
+            allUnits.add(FHEMrow.unit);
          }
       }
    }

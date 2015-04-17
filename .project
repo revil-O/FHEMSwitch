@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>FHEMSwitches</name>
+	<name>FHEMSwitch</name>
 	<comment></comment>
 	<projects>
 		<project>drag-and-drop-list</project>

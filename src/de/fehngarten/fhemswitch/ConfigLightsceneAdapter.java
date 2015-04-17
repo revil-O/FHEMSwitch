@@ -187,7 +187,7 @@ public class ConfigLightsceneAdapter extends BaseAdapter
       if (lightsceneRow.isHeader)
       {
          lightsceneHolder.lightscene_enabled.setVisibility(View.INVISIBLE);
-         rowView.setBackgroundColor(0xFFBBBBBB);
+         rowView.setBackgroundColor(mContext.getResources().getColor(R.color.conf_bg_header_3));
         
       }
       else

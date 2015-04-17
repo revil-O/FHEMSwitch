@@ -49,6 +49,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import de.fehngarten.fhemswitch.ConfigMain;
 import de.fehngarten.fhemswitch.R;
 
 /**
@@ -522,7 +523,7 @@ public class DragSortListView extends ListView {
                         0);
                 int bgColor = a.getColor(
                         R.styleable.DragSortListView_float_background_color,
-                        0xFFBBAAAA);
+                        0xFFCCDDDD);
 
                 controller = new DragSortController(
                         this, dragHandleId, dragInitMode, removeMode,

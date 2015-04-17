@@ -2,6 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
+    android:background="@color/conf_bg_line"
     android:orientation="horizontal" >
 
     <CheckBox
@@ -12,7 +13,7 @@
 
     <TextView
         android:id="@+id/config_value_unit"
-        android:layout_width="222dp"
+        android:layout_width="202dp"
         android:layout_height="wrap_content"
         android:textAllCaps="false"
         android:textColor="#008"
@@ -21,7 +22,7 @@
 
     <EditText
         android:id="@+id/config_value_name"
-        android:layout_width="222dp"
+        android:layout_width="182dp"
         android:layout_height="wrap_content"
         android:ems="10"
         android:inputType="text" />
@@ -31,5 +32,6 @@
         android:layout_height="wrap_content"
         android:textAllCaps="false"
         android:textColor="#008"
+        android:maxLines="1"
         android:textSize="14sp" />
 </LinearLayout>

@@ -20,7 +20,9 @@ import android.appwidget.AppWidgetManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Point;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -31,7 +33,9 @@ import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.github.nkzawa.emitter.Emitter;
 import com.github.nkzawa.socketio.client.Ack;
+import com.github.nkzawa.socketio.client.Socket;
 import com.mobeta.android.dslv.DragSortListView;
 
 import de.fehngarten.fhemswitch.MyLightScenes.MyLightScene;
@@ -41,7 +45,7 @@ public class ConfigMain extends Activity
    Button configOkButton;
    Button configOkButton2;
    int mAppWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID;
-   private EditText urlpl, urljs;
+   private EditText urlpl, urljs, connectionPW;
    public static ConfigData configData;
    private ConfigDataOnly configDataOnly;
    private MySocket mySocket;
@@ -52,19 +56,23 @@ public class ConfigMain extends Activity
 
    public int lsCounter = 0;
    public int lsSize = 0;
-   
+   public static Context mContext;
+   public Handler waitAuth = new Handler();
+
    @Override
    protected void onCreate(Bundle savedInstanceState)
    {
       // TODO Auto-generated method stub
       super.onCreate(savedInstanceState);
 
+      mContext = this;
       setResult(RESULT_CANCELED);
 
       setContentView(R.layout.config);
 
       urlpl = (EditText) findViewById(R.id.urlpl);
       urljs = (EditText) findViewById(R.id.urljs);
+      connectionPW = (EditText) findViewById(R.id.connection_pw);
 
       try
       {
@@ -94,6 +102,7 @@ public class ConfigMain extends Activity
 
       urljs.setText(configDataOnly.urljs, TextView.BufferType.EDITABLE);
       urlpl.setText(configDataOnly.urlpl, TextView.BufferType.EDITABLE);
+      connectionPW.setText(configDataOnly.connectionPW, TextView.BufferType.EDITABLE);
 
       configOkButton = (Button) findViewById(R.id.okconfig);
       configOkButton.setOnClickListener(configOkButtonOnClickListener);
@@ -101,7 +110,6 @@ public class ConfigMain extends Activity
       configOkButton2.setOnClickListener(configOkButtonOnClickListener);
 
       configData = new ConfigData();
-
       for (ConfigSwitchRow switchRow : configDataOnly.switchRows)
       {
          if (switchRow.enabled)
@@ -172,47 +180,109 @@ public class ConfigMain extends Activity
       }
    };
 
+   private Runnable runnableWaitAuth = new Runnable()
+   {
+      @Override
+      public void run()
+      {
+         ConfigMain.sendAlertMessage(getString(R.string.checkpw));
+         mySocket.socket.off("authenticated");
+         mySocket.socket.close();
+         mySocket = null;
+         
+      }
+   };
+
+   private Emitter.Listener authListener = new Emitter.Listener() 
+   {
+      @Override
+      public void call(Object... args)
+      {
+         Log.i("trace","authenticated");
+         runOnUiThread(new Runnable()
+         {
+            @Override
+            public void run()
+            {
+               Log.i("trace","authenticated run");
+               waitAuth.removeCallbacks(runnableWaitAuth);
+               getAllSwitches(mySocket);
+               getAllLightscenes(mySocket);
+               getAllValues(mySocket);
+
+               findViewById(R.id.switches_header1).setVisibility(View.VISIBLE);
+               findViewById(R.id.switches_header2).setVisibility(View.VISIBLE);
+               findViewById(R.id.lightscenes_header1).setVisibility(View.VISIBLE);
+               findViewById(R.id.lightscenes_header2).setVisibility(View.VISIBLE);
+               findViewById(R.id.values_header1).setVisibility(View.VISIBLE);
+               findViewById(R.id.values_header2).setVisibility(View.VISIBLE);
+               findViewById(R.id.okconfig2).setVisibility(View.VISIBLE);
+
+               configOkButton.setText(R.string.save);          
+            }
+         });
+      }
+   };     
+   
    private void showFHEMunits()
    {
       try
       {
          URL url = new URL(urljs.getText().toString());
          url.toURI();
-         mySocket = new MySocket(urljs.getText().toString());
-         getAllSwitches(mySocket);
-         getAllLightscenes(mySocket);
-         getAllValues(mySocket);
-
-         findViewById(R.id.switches_header1).setVisibility(View.VISIBLE);
-         findViewById(R.id.switches_header2).setVisibility(View.VISIBLE);
-         findViewById(R.id.lightscenes_header1).setVisibility(View.VISIBLE);
-         findViewById(R.id.lightscenes_header2).setVisibility(View.VISIBLE);
-         findViewById(R.id.values_header1).setVisibility(View.VISIBLE);
-         findViewById(R.id.values_header2).setVisibility(View.VISIBLE);
-         findViewById(R.id.okconfig2).setVisibility(View.VISIBLE);
-
-         configOkButton.setText(R.string.save);
+         try
+         {
+            mySocket = new MySocket(urljs.getText().toString());
+            mySocket.socket.once("authenticated", authListener);
+            String pw = connectionPW.getText().toString();
+            if (!pw.equals(""))
+            {
+               Log.i("trace","send pw");
+               mySocket.socket.emit("authentication", pw);
+               waitAuth.postDelayed(runnableWaitAuth, 2000);
+            }
+         }
+         catch (Exception e)
+         {
+            waitAuth.removeCallbacks(runnableWaitAuth);
+            sendAlertMessage(getString(R.string.noconn) + ":\n- " + getString(R.string.urlcheck) + "!\n- " + getString(R.string.onlinecheck) + "?\n" + e);
+         }
+         
+         mySocket.socket.on(Socket.EVENT_CONNECT_ERROR, new Emitter.Listener()
+         {
+            @Override
+            public void call(Object... args)
+            {
+               runOnUiThread(new Runnable()
+               {
+                  @Override
+                  public void run()
+                  {
+                     waitAuth.removeCallbacks(runnableWaitAuth);
+                     ConfigMain.sendAlertMessage(getString(R.string.noconn) + ":\n- " + getString(R.string.urlcheck) + ".\n- " + getString(R.string.onlinecheck) + "?");
+                  }
+               });
+            }
+         });
       }
       catch (MalformedURLException e)
       {
-         sendAlertMessage("Die angegbene URL ist ungültig:\n " + e);
+         sendAlertMessage(getString(R.string.urlerr) + ":\n " + e);
       }
       catch (URISyntaxException e)
       {
-         sendAlertMessage("Die angegbene URL ist ungültig:\n " + e);
+         sendAlertMessage(getString(R.string.urlerr) + ":\n " + e);
       }
    }
-
-   private void sendAlertMessage(final String msg)
+  
+   public static void sendAlertMessage(final String msg)
    {
-      AlertDialog.Builder dialog = new AlertDialog.Builder(this);
-      dialog.setTitle(getString(R.string.error_header));
+      AlertDialog.Builder dialog = new AlertDialog.Builder(mContext);
+      dialog.setTitle(mContext.getString(R.string.error_header));
       //dialog.setIcon(R.drawable.error_icon);
       dialog.setMessage(msg);
-      dialog.setNeutralButton(getString(R.string.ok), null);
-
+      dialog.setNeutralButton(mContext.getString(R.string.ok), null);
       dialog.create().show();
-
    }
 
    private void getAllSwitches(MySocket mySocket)
@@ -221,6 +291,7 @@ public class ConfigMain extends Activity
       configSwitchAdapter = new ConfigSwitchAdapter(this, R.layout.config_switch_row);
       l.setAdapter(configSwitchAdapter);
       l.setDropListener(onDropSwitch);
+      l.setFloatViewManager(switchFloatViewManager);
       l.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
       l.setDragHandleId(R.id.config_switch_unit);
 
@@ -230,7 +301,7 @@ public class ConfigMain extends Activity
          @Override
          public void call(Object... args)
          {
-            //Log.i("get allSwitches", args[0].toString());
+            Log.i("get allSwitches", args[0].toString());
             configSwitchAdapter.initData((JSONArray) args[0], configData.switches, configData.switchesDisabled);
             runOnUiThread(new Runnable()
             {
@@ -248,14 +319,14 @@ public class ConfigMain extends Activity
    private void getAllLightscenes(final MySocket mySocket)
    {
       final ArrayList<ConfigLightsceneRow> lightsceneRowsTemp = new ArrayList<ConfigLightsceneRow>();
-      
+
       DragSortListView l = (DragSortListView) findViewById(R.id.lightscenes);
       configLightsceneAdapter = new ConfigLightsceneAdapter(this, R.layout.config_lightscene_row);
       l.setAdapter(configLightsceneAdapter);
       l.setDropListener(onDropLightscene);
-      LightscenesSectionController c = new LightscenesSectionController(l, configLightsceneAdapter);
+      LightscenesSectionController c = new LightscenesSectionController(l, configLightsceneAdapter, this);
       l.setFloatViewManager(c);
-      //l.setOnTouchListener(c);
+      //l.setOnTouchListener(c);   
 
       mySocket.socket.emit("getAllUnitsOf", "LightScene", new Ack()
       {
@@ -263,12 +334,12 @@ public class ConfigMain extends Activity
          public void call(Object... args)
          {
             ArrayList<String> lightscenesFHEM = convertJSONarray((JSONArray) args[0]);
-            
+
             lsSize = lightscenesFHEM.size();
             for (int i = 0; i < lsSize; i++)
             {
                final String unit = lightscenesFHEM.get(i);
-               
+
                mySocket.socket.emit("command", "get " + unit + " scenes", new Ack()
                {
                   @Override
@@ -279,7 +350,10 @@ public class ConfigMain extends Activity
                      ArrayList<String> lightscenesMember = convertJSONarray((JSONArray) args[0]);
                      for (String unit : lightscenesMember)
                      {
-                        lightsceneRowsTemp.add(new ConfigLightsceneRow(unit, unit, false, false));
+                        if (!unit.equals(""))
+                        {   
+                           lightsceneRowsTemp.add(new ConfigLightsceneRow(unit, unit, false, false));
+                        }
                      }
                      lsCounter++;
                      if (lsCounter == lsSize)
@@ -308,6 +382,7 @@ public class ConfigMain extends Activity
       configValueAdapter = new ConfigValueAdapter(this, R.layout.config_value_row);
       l.setAdapter(configValueAdapter);
       l.setDropListener(onDropValue);
+      l.setFloatViewManager(valueFloatViewManager);
       l.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
       l.setDragHandleId(R.id.config_value_unit);
 
@@ -348,6 +423,7 @@ public class ConfigMain extends Activity
       configDataOnly = new ConfigDataOnly();
       configDataOnly.urljs = urljs.getText().toString();
       configDataOnly.urlpl = urlpl.getText().toString();
+      configDataOnly.connectionPW = connectionPW.getText().toString();
       configDataOnly.switchRows = configSwitchAdapter.getData();
       configDataOnly.lightsceneRows = configLightsceneAdapter.getData();
       configDataOnly.valueRows = configValueAdapter.getData();
@@ -398,6 +474,53 @@ public class ConfigMain extends Activity
       params.height = totalHeight + (listView.getDividerHeight() * (listAdapter.getCount() - 1));
       listView.setLayoutParams(params);
    }
+
+   private DragSortListView.FloatViewManager switchFloatViewManager = new DragSortListView.FloatViewManager()
+   {
+      @Override
+      public View onCreateFloatView(int position)
+      {
+         DragSortListView l = (DragSortListView) findViewById(R.id.switches);
+         View v = configSwitchAdapter.getView(position, null, l);
+         v.setBackgroundColor(mContext.getResources().getColor(R.color.conf_bg_handle_pressed));
+         return v;
+      }
+
+      @Override
+      public void onDragFloatView(View floatView, Point floatPoint, Point touchPoint)
+      {
+
+      }
+
+      @Override
+      public void onDestroyFloatView(View floatView)
+      {
+         //do nothing; block super from crashing
+      }
+   };
+   private DragSortListView.FloatViewManager valueFloatViewManager = new DragSortListView.FloatViewManager()
+   {
+      @Override
+      public View onCreateFloatView(int position)
+      {
+         DragSortListView l = (DragSortListView) findViewById(R.id.values);
+         View v = configValueAdapter.getView(position, null, l);
+         v.setBackgroundColor(mContext.getResources().getColor(R.color.conf_bg_handle_pressed));
+         return v;
+      }
+
+      @Override
+      public void onDragFloatView(View floatView, Point floatPoint, Point touchPoint)
+      {
+
+      }
+
+      @Override
+      public void onDestroyFloatView(View floatView)
+      {
+         //do nothing; block super from crashing
+      }
+   };
 
    private DragSortListView.DropListener onDropSwitch = new DragSortListView.DropListener()
    {

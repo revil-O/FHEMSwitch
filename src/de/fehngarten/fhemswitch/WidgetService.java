@@ -339,7 +339,6 @@ public class WidgetService extends Service
       else if (!mySocket.socket.connected())
       {
          //Log.i("trace", "socket is disconnected");
-         mySocket.socket.off();
          mySocket.socket.close();
          mySocket = null;
          callInitSocket = true;
@@ -392,6 +391,11 @@ public class WidgetService extends Service
          @Override
          public void call(Object... args)
          {
+            String pw = configDataOnly.connectionPW;
+            if (!pw.equals(""))
+            {
+               mySocket.socket.emit("authentication", pw);
+            }
             //Log.i("socket", "connected");
             try
             {
@@ -426,6 +430,7 @@ public class WidgetService extends Service
          }
       });
 
+      mySocket.socket.off("value");
       mySocket.socket.on("value", new Emitter.Listener()
       {
          @Override
@@ -508,6 +513,27 @@ public class WidgetService extends Service
             }
          }
       });
+ 
+      mySocket.socket.on("fhemError", new Emitter.Listener()
+      {
+         @Override
+         public void call(Object... args)
+         {
+            //Log.i("socket", "disconnected");
+            setVisibility("fhemError");
+         }
+      });
+      
+      mySocket.socket.on("fhemConn", new Emitter.Listener()
+      {
+         @Override
+         public void call(Object... args)
+         {
+            //Log.i("socket", "disconnected");
+            setVisibility("connected");
+         }
+      });
+      
    }
 
    @Override

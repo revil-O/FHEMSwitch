@@ -38,30 +38,35 @@ class ConfigSwitchAdapter extends BaseAdapter
 
    public void initData(JSONArray JSONswitches, List<MySwitch> switches, List<MySwitch> switchesDisabled)
    {
+      switchRows = new ArrayList<ConfigSwitchRow>();
       ArrayList<String> switchesFHEM = ConfigMain.convertJSONarray(JSONswitches);
       ArrayList<String> switchesConfig = new ArrayList<String>();
+      ArrayList<String> allUnits = new ArrayList<String>();
 
       for (MySwitch mySwitch : switches)
       {
-         if (switchesFHEM.contains(mySwitch.unit))
+         if (switchesFHEM.contains(mySwitch.unit) && !allUnits.contains(mySwitch.unit))
          {
             switchRows.add(new ConfigSwitchRow(mySwitch.unit, mySwitch.name, true, mySwitch.cmd));
             switchesConfig.add(mySwitch.unit);
+            allUnits.add(mySwitch.unit);
          }
       }
       for (MySwitch mySwitch : switchesDisabled)
       {
-         if (switchesFHEM.contains(mySwitch.unit))
+         if (switchesFHEM.contains(mySwitch.unit) && !allUnits.contains(mySwitch.unit))
          {
             switchRows.add(new ConfigSwitchRow(mySwitch.unit, mySwitch.name, false, mySwitch.cmd));
             switchesConfig.add(mySwitch.unit);
+            allUnits.add(mySwitch.unit);
          }
       }
       for (String unit : switchesFHEM)
       {
-         if (!switchesConfig.contains(unit))
+         if (!switchesConfig.contains(unit) && !allUnits.contains(unit))
          {
             switchRows.add(new ConfigSwitchRow(unit, unit, false, "toggle"));
+            allUnits.add(unit);
          }
       }
    }

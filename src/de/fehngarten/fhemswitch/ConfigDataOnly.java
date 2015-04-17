@@ -10,4 +10,5 @@ public class ConfigDataOnly implements java.io.Serializable
    public ArrayList<ConfigSwitchRow> switchRows = new ArrayList<ConfigSwitchRow>();
    public ArrayList<ConfigLightsceneRow> lightsceneRows = new ArrayList<ConfigLightsceneRow>();
    public ArrayList<ConfigValueRow> valueRows = new ArrayList<ConfigValueRow>();
+   public String connectionPW = "";
 }
