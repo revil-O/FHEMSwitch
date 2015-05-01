@@ -61,10 +61,11 @@ class LightScenesFactory implements RemoteViewsService.RemoteViewsFactory
    public RemoteViews getViewAt(int position)
    {
       RemoteViews mView = new RemoteViews(mContext.getPackageName(), R.layout.lightscene_row);
-      //Log.i("LightScene Position: " + position + " of " + lightScenes.items.size(),lightScenes.items.get(position).name);
+      //Log.i("LightScene Position: " + position + " of " + WidgetService.configData.lightScenes.items.size(),WidgetService.configData.lightScenes.items.get(position).name + " " + WidgetService.configData.lightScenes.items.get(position).unit);
 
       if (WidgetService.configData.lightScenes.items.get(position).header)
       {
+         //Log.i("Factory",WidgetService.configData.lightScenes.items.get(position).toString());
          SpannableString s = new SpannableString(WidgetService.configData.lightScenes.items.get(position).name);
          s.setSpan(new StyleSpan(Typeface.BOLD), 0,s.length(),0); 
          mView.setTextViewText(R.id.lightscene_name, s);
@@ -82,7 +83,8 @@ class LightScenesFactory implements RemoteViewsService.RemoteViewsFactory
          final Intent fillInIntent = new Intent();
          fillInIntent.setAction(WidgetProvider.OPEN_URL);
          final Bundle bundle = new Bundle();
-         bundle.putString(WidgetProvider.URL, "https://home.wernerschaeffer.de:8082/fhem?detail=" + WidgetService.configData.lightScenes.items.get(position).unit);
+         bundle.putString(WidgetProvider.URL,WidgetService.fhemUrl + "?detail=" + WidgetService.configData.lightScenes.items.get(position).unit);
+         bundle.putString(WidgetProvider.TYPE, "lightScene");
          fillInIntent.putExtras(bundle);
          mView.setOnClickFillInIntent(R.id.lightscene_name, fillInIntent);
       }

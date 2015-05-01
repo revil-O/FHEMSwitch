@@ -14,6 +14,8 @@ public class WidgetProvider extends AppWidgetProvider
    //private static final String LOG = "WetterstationWidgetProvider";
    public static final String SEND_FHEM_COMMAND = "de.fehngarten.fhemswitch.SEND_FHEM_COMMAND";
    public static final String COMMAND = "de.fehngarten.fhemswitch.COMMAND";
+   public static final String UNIT = "de.fehngarten.fhemswitch.UNIT";
+   public static final String TYPE = "de.fehngarten.fhemswitch.TYPE";
    public static final String URL = "de.fehngarten.fhemswitch.URL";
    public static final String OPEN_URL = "de.fehngarten.fhemswitch.OPEN_URL";
    private static Boolean startService = true;
@@ -48,7 +50,17 @@ public class WidgetProvider extends AppWidgetProvider
       {
          //Log.i("trace", "switch pressed");
          String cmd = intent.getExtras().getString(COMMAND);
-         WidgetService.sendCommand(cmd);
+         
+         String device;
+         if (intent.getExtras().getString(COMMAND).equals("switch"))
+         {
+            device = intent.getExtras().getString(UNIT);
+         }
+         else
+         {
+            device = "";
+         }
+         WidgetService.sendCommand(cmd,device);
       }
       else if (intent.getAction().equals(OPEN_URL))
       {

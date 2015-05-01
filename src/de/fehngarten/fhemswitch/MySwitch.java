@@ -1,5 +1,7 @@
 package de.fehngarten.fhemswitch;
 
+//import android.util.Log; 
+
 public class MySwitch
 {
    public String name;
@@ -17,7 +19,8 @@ public class MySwitch
 
    public void setIcon(String icon)
    {
-      if (icon.equals("on") || icon.equals("off"))
+      //Log.i("icon",icon);
+      if (icon.equals("on") || icon.equals("off") || icon.equals("set_on") || icon.equals("set_off") || icon.equals("set_toggle"))
       {
          this.icon = icon;
       }

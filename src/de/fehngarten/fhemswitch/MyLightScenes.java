@@ -31,7 +31,7 @@ public class MyLightScenes
          if (lightScene.enabled)
          {
             String lightSceneUnit = lightScene.unit;
-            items.add(new Item(lightSceneUnit, lightSceneUnit, lightScene.name, true, false));
+            items.add(new Item(lightScene.unit, lightScene.name, lightScene.unit, true, false));
             itemsCount++;
             for (MyLightScene.Member member : lightScene.members)
             {

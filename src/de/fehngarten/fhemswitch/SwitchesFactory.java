@@ -59,7 +59,7 @@ class SwitchesFactory implements RemoteViewsFactory
    @Override
    public RemoteViews getViewAt(int position)
    {
-      //Log.i("switches Position: " + position + " of " + WidgetService.configData.switches.size(),WidgetService.configData.switches.get(position).name);
+      //Log.i("switches Position: " + position + " of " + WidgetService.configData.switches.size(),WidgetService.configData.switches.get(position).icon);
       RemoteViews mView = new RemoteViews(mContext.getPackageName(), R.layout.switch_row);
       mView.setTextViewText(R.id.switch_name, WidgetService.configData.switches.get(position).name);
       mView.setImageViewResource(R.id.switch_icon, WidgetService.icons.get(WidgetService.configData.switches.get(position).icon));
@@ -68,6 +68,8 @@ class SwitchesFactory implements RemoteViewsFactory
       fillInIntent.setAction(WidgetProvider.SEND_FHEM_COMMAND);
       final Bundle bundle = new Bundle();
       bundle.putString(WidgetProvider.COMMAND, WidgetService.configData.switches.get(position).activateCmd());
+      bundle.putString(WidgetProvider.TYPE, "switch");
+      bundle.putString(WidgetProvider.UNIT, WidgetService.configData.switches.get(position).unit);
       fillInIntent.putExtras(bundle);
       mView.setOnClickFillInIntent(R.id.switch_row, fillInIntent);
  

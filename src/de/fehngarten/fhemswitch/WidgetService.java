@@ -31,7 +31,7 @@ import com.github.nkzawa.emitter.Emitter;
 import com.github.nkzawa.socketio.client.Socket;
 
 import de.fehngarten.fhemswitch.MyLightScenes.MyLightScene;
-//import android.util.Log;
+import android.util.Log;
 
 public class WidgetService extends Service
 {
@@ -57,7 +57,7 @@ public class WidgetService extends Service
    private AppWidgetManager appWidgetManager;
    private int[] allWidgetIds;
    private Handler handler = new Handler();
-   private Context context;
+   private static Context context;
 
    private static ArrayList<String> switchesList = new ArrayList<String>();
    private static ArrayList<String> lightScenesList = new ArrayList<String>();
@@ -145,7 +145,11 @@ public class WidgetService extends Service
       {
          if (lightsceneRow.isHeader)
          {
+            Log.i("Lightscene name",lightsceneRow.name);
+            Log.i("Lightscene unit",lightsceneRow.unit);
             newLightScene = configData.lightScenes.newLightScene(lightsceneRow.name, lightsceneRow.unit);
+            Log.i("new Lightscene name",newLightScene.name);
+            Log.i("new Lightscene unit",newLightScene.unit);
          }
          else
          {
@@ -162,7 +166,10 @@ public class WidgetService extends Service
       }
 
       icons.put("on", R.drawable.on);
+      icons.put("set_on", R.drawable.set_on);
       icons.put("off", R.drawable.off);
+      icons.put("set_off", R.drawable.set_off);
+      icons.put("set_toggle", R.drawable.set_toggle);
       icons.put("undefined", R.drawable.undefined);
       icons.put("toggle", R.drawable.undefined);
 
@@ -187,9 +194,29 @@ public class WidgetService extends Service
       handler.postDelayed(checkSocketTimer, 100000);
    }
 
-   public static void sendCommand(String cmd)
+   public static void sendCommand(String cmd, String unit)
    {
       mySocket.sendCommand(cmd);
+      if (unit.length() > 0)
+      {
+         for (MySwitch mySwitch : configData.switches)
+         {
+            if (mySwitch.unit.equals(unit))
+            {
+               mySwitch.setIcon("set_toggle");
+               //appWidgetManager.notifyAppWidgetViewDataChanged(appWidgetIds, R.id.switches);
+               AppWidgetManager mgr = AppWidgetManager.getInstance(context);
+
+               int[] ids = mgr.getAppWidgetIds(new ComponentName(context, WidgetProvider.class));
+
+               for (int id : ids)
+               {
+                  mgr.notifyAppWidgetViewDataChanged(id, R.id.switches);
+               }
+               break;
+            }
+         }         
+      }
    }
 
    @SuppressWarnings("deprecation")

@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="de.fehngarten.fhemswitch"
-    android:versionCode="1"
-    android:versionName="1.0" >
+    android:versionCode="100"
+    android:versionName="1.0.0" >
 
     <uses-sdk
         android:minSdkVersion="16"
@@ -11,11 +11,12 @@
 
     <application
         android:allowBackup="true"
+        android:icon="@drawable/icon2"
         android:theme="@style/AppTheme" >
         <activity 
             android:name="de.fehngarten.fhemswitch.ConfigMain" 
-            android:icon="@drawable/icon"
-            android:label="@string/config_name">
+            android:icon="@drawable/icon2"
+            android:label="@string/widget_name">
 
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
