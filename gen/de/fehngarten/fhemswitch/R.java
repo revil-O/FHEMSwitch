@@ -260,6 +260,7 @@ containing a value of this type.
         public static final int config_name=0x7f070000;
         public static final int conn_pw=0x7f070004;
         public static final int error_header=0x7f070008;
+        public static final int fileerr=0x7f070018;
         public static final int getConfig=0x7f070009;
         public static final int initruns=0x7f070014;
         public static final int lightscenes=0x7f07000b;

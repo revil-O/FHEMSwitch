@@ -14,7 +14,7 @@ public class MySocket
    private IO.Options options = new IO.Options();
 
    public Socket socket = null;
-
+ 
    public MySocket(String url)
    {
       Log.d(CLASSNAME, "started");
@@ -36,9 +36,10 @@ public class MySocket
          @Override
          public void call(Object... args)
          {
-          Log.e("socket error", args[0].toString());
+            Log.e("socket error", args[0].toString());
          }
       });
+      
       socket.on(Socket.EVENT_CONNECT_ERROR, new Emitter.Listener()
       {
          @Override
@@ -46,6 +47,15 @@ public class MySocket
          {
             Log.e("connection error", args[0].toString());
             socket.close();
+         }
+      });
+
+      socket.on(Socket.EVENT_CONNECT, new Emitter.Listener()
+      {
+         @Override
+         public void call(Object... args)
+         {
+            Log.e("connection established", "");
          }
       });
    }

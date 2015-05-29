@@ -23,6 +23,7 @@
     <string name="checkpw">Bitte Passwort prüfen</string>
     <string name="initruns">Initialisierung läuft</string>
     <string name="urlerr">Die angegbene URL ist ungültig</string>
+    <string name="fileerr">Fehler beim Speichern der Konfiguration:</string>
     <string name="urlcheck">bitte URL prüfen</string>
     <string name="onlinecheck">ist dieses Geräte überhaupt Online</string>
     

@@ -1,5 +1,6 @@
 package de.fehngarten.fhemswitch;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -48,7 +49,7 @@ public class ConfigMain extends Activity
    private EditText urlpl, urljs, connectionPW;
    public static ConfigData configData;
    private ConfigDataOnly configDataOnly;
-   private MySocket mySocket;
+   public static MySocket mySocket;
 
    public ConfigSwitchAdapter configSwitchAdapter;
    public ConfigLightsceneAdapter configLightsceneAdapter;
@@ -231,13 +232,20 @@ public class ConfigMain extends Activity
          URL url = new URL(urljs.getText().toString());
          url.toURI();
          try
-         {
+         {           
+            if (WidgetService.mySocket != null && WidgetService.mySocket.socket.connected())
+            {
+               WidgetService.mySocket.socket.close();
+            }
+            
             mySocket = new MySocket(urljs.getText().toString());
-            mySocket.socket.once("authenticated", authListener);
+            
+            mySocket.socket.on("authenticated", authListener);
             String pw = connectionPW.getText().toString();
+
             if (!pw.equals(""))
             {
-               Log.i("trace","send pw");
+               //Log.i("trace","send pw");
                mySocket.socket.emit("authentication", pw);
                waitAuth.postDelayed(runnableWaitAuth, 2000);
             }
@@ -430,6 +438,9 @@ public class ConfigMain extends Activity
 
       try
       {
+         String dir = getFilesDir().getAbsolutePath();
+         File f0 = new File(dir, WidgetService.CONFIGFILE);
+         f0.delete(); 
          FileOutputStream f_out = openFileOutput(WidgetService.CONFIGFILE, Context.MODE_PRIVATE);
          ObjectOutputStream obj_out = new ObjectOutputStream(f_out);
          obj_out.writeObject(configDataOnly);
@@ -438,7 +449,7 @@ public class ConfigMain extends Activity
       }
       catch (Exception e)
       {
-         e.printStackTrace();
+         sendAlertMessage(getString(R.string.fileerr) + ":\n " + e);
       }
 
       //WidgetService.startup();         

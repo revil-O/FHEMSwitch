@@ -3,7 +3,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:minHeight="110dp" 
     android:initialLayout="@layout/main_layout" 
-    android:minWidth="320dp"
+    android:minWidth="110dp"
     android:resizeMode="horizontal|vertical"
     android:icon="@drawable/ic_launcher" 
     android:configure="de.fehngarten.fhemswitch.ConfigMain"

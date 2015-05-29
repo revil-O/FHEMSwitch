@@ -181,6 +181,11 @@ public class WidgetService extends Service
       allWidgetIds = appWidgetManager.getAppWidgetIds(thisWidget);
       //views = new RemoteViews(this.getApplicationContext().getPackageName(), R.layout.main_layout);
 
+      if (ConfigMain.mySocket != null && ConfigMain.mySocket.socket.connected())
+      {
+         ConfigMain.mySocket.socket.close();
+      }
+      
       if (mySocket != null)
       {
          //Log.i("trace", "reset socket");
