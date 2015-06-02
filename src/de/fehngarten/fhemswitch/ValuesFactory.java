@@ -12,11 +12,13 @@ class ValuesFactory implements RemoteViewsFactory
 {
    //private static final String CLASSNAME = "ValuesFactory.";
    private Context mContext = null;
-
-   public ValuesFactory(Context context, Intent intent)
+   private int colnum;
+   
+   public ValuesFactory(Context context, Intent intent, int colnum)
    {
       //Log.d(CLASSNAME, "started");
       mContext = context;
+      this.colnum = colnum;
    }
 
    public void initData()
@@ -56,7 +58,7 @@ class ValuesFactory implements RemoteViewsFactory
 
       try
       {
-         return WidgetService.configData.values.size();
+         return WidgetService.configData.valuesCols.get(colnum).size();
       }
       catch (Exception e)
       {
@@ -69,14 +71,14 @@ class ValuesFactory implements RemoteViewsFactory
    {
       //Log.i("values Position: " + position + " of " + values.size(),values.get(position).name);
       RemoteViews mView = new RemoteViews(mContext.getPackageName(), R.layout.value_row);
-      mView.setTextViewText(R.id.value_name, WidgetService.configData.values.get(position).name);
-      mView.setTextViewText(R.id.value_value, WidgetService.configData.values.get(position).value);
+      mView.setTextViewText(R.id.value_name, WidgetService.configData.valuesCols.get(colnum).get(position).name);
+      mView.setTextViewText(R.id.value_value, WidgetService.configData.valuesCols.get(colnum).get(position).value);
 
       if (position == 0)
       {
          mView.setInt(R.id.value_row, "setBackgroundResource", R.drawable.valuefirst);
       }
-      else if (position == WidgetService.configData.values.size() - 1)
+      else if (position == WidgetService.configData.valuesCols.get(colnum).size() - 1)
       {
          mView.setInt(R.id.value_row, "setBackgroundResource", R.drawable.valuelast);
       }
@@ -88,7 +90,7 @@ class ValuesFactory implements RemoteViewsFactory
       final Intent fillInIntent = new Intent();
       fillInIntent.setAction(WidgetProvider.OPEN_URL);
       final Bundle bundle = new Bundle();
-      bundle.putString(WidgetProvider.URL, WidgetService.fhemUrl + "?detail=" + WidgetService.configData.values.get(position).unit);
+      bundle.putString(WidgetProvider.URL, WidgetService.fhemUrl + "?detail=" + WidgetService.configData.valuesCols.get(colnum).get(position).unit);
       fillInIntent.putExtras(bundle);
       mView.setOnClickFillInIntent(R.id.value_name, fillInIntent);
 

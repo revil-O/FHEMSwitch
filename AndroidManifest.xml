@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="de.fehngarten.fhemswitch"
-    android:versionCode="101"
-    android:versionName="1.0.1" >
+    android:versionCode="110"
+    android:versionName="1.1.0" >
  
     <uses-sdk
         android:minSdkVersion="16"
@@ -43,7 +43,15 @@
         <service android:name="de.fehngarten.fhemswitch.WidgetService" >
         </service>
         <service
-            android:name="de.fehngarten.fhemswitch.SwitchesService"
+            android:name="de.fehngarten.fhemswitch.SwitchesService0"
+            android:permission="android.permission.BIND_REMOTEVIEWS" >
+        </service>
+        <service
+            android:name="de.fehngarten.fhemswitch.SwitchesService1"
+            android:permission="android.permission.BIND_REMOTEVIEWS" >
+        </service>
+        <service
+            android:name="de.fehngarten.fhemswitch.SwitchesService2"
             android:permission="android.permission.BIND_REMOTEVIEWS" >
         </service>
         <service
@@ -51,7 +59,15 @@
             android:permission="android.permission.BIND_REMOTEVIEWS" >
         </service>
         <service
-            android:name="de.fehngarten.fhemswitch.ValuesService"
+            android:name="de.fehngarten.fhemswitch.ValuesService0"
+            android:permission="android.permission.BIND_REMOTEVIEWS" >
+        </service>
+        <service
+            android:name="de.fehngarten.fhemswitch.ValuesService1"
+            android:permission="android.permission.BIND_REMOTEVIEWS" >
+        </service>
+        <service
+            android:name="de.fehngarten.fhemswitch.ValuesService2"
             android:permission="android.permission.BIND_REMOTEVIEWS" >
         </service>
     </application>

@@ -12,6 +12,7 @@
     <string name="getConfig">get FHEM units</string>
 
     <string name="switches">Switches</string>
+    <string name="columns">Columns:</string>
     <string name="lightscenes">Scenarios</string>
     <string name="values">Values</string>
     <string name="values2">Values</string>
@@ -24,12 +25,19 @@
     <string name="initruns">Initialising runs</string>
     <string name="urlerr">The typed URL is invalid</string>
     <string name="urlcheck">please check URL</string>
+    <string name="fileerr">Error at saving configuration:</string>
     <string name="onlinecheck">is this device online</string>
     
     <string-array name="commands">
         <item>toggle</item>
         <item>on</item>
         <item>off</item>
+    </string-array>
+
+    <string-array name="colnum">
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
     </string-array>
 
 </resources>

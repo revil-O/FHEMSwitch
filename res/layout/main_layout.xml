@@ -20,12 +20,30 @@
         android:visibility="gone" />
 
     <ListView
-        android:id="@+id/switches"
+        android:id="@+id/switches0"
         android:layout_width="168dp"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
-        android:visibility="visible"
+        android:visibility="gone"
         android:layout_marginLeft="8dp" />
+
+    <ListView
+        android:id="@+id/switches1"
+        android:layout_width="168dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_marginLeft="8dp"
+        android:visibility="gone"
+        android:layout_toRightOf="@id/switches0" />
+    
+    <ListView
+        android:id="@+id/switches2"
+        android:layout_width="168dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_marginLeft="8dp"
+        android:visibility="gone"
+        android:layout_toRightOf="@id/switches1" />
 
     <ListView
         android:id="@+id/lightscenes"
@@ -33,16 +51,32 @@
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:layout_marginLeft="8dp"
-        android:visibility="visible"
-        android:layout_toRightOf="@id/switches" />
+        android:visibility="gone"
+        android:layout_toRightOf="@id/switches2" />
 
     <ListView
-        android:id="@+id/values"
+        android:id="@+id/values0"
         android:layout_width="160dp"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:layout_marginLeft="8dp"
-        android:visibility="visible"
+        android:visibility="gone"
         android:layout_toRightOf="@id/lightscenes" />
+    <ListView
+        android:id="@+id/values1"
+        android:layout_width="160dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_marginLeft="8dp"
+        android:visibility="gone"
+        android:layout_toRightOf="@id/values0" />
+    <ListView
+        android:id="@+id/values2"
+        android:layout_width="160dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_marginLeft="8dp"
+        android:visibility="gone"
+        android:layout_toRightOf="@id/values1" />
 
 </RelativeLayout>

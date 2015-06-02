@@ -12,6 +12,7 @@
     <string name="getConfig">FHEM units einlesen</string>
 
     <string name="switches">Schalter</string>
+    <string name="columns">Spalten:</string>
     <string name="lightscenes">Szenarios</string>
     <string name="values">Messwerte</string>
     <string name="values2">Werte</string>
@@ -26,11 +27,17 @@
     <string name="fileerr">Fehler beim Speichern der Konfiguration:</string>
     <string name="urlcheck">bitte URL prüfen</string>
     <string name="onlinecheck">ist dieses Geräte überhaupt Online</string>
-    
+
     <string-array name="commands">
         <item>toggle</item>
         <item>on</item>
         <item>off</item>
+    </string-array>
+
+    <string-array name="colnum">
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
     </string-array>
 
 </resources>

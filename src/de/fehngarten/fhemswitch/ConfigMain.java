@@ -10,6 +10,8 @@ import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
+import android.widget.ArrayAdapter;
+import android.widget.Spinner;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -59,11 +61,12 @@ public class ConfigMain extends Activity
    public int lsSize = 0;
    public static Context mContext;
    public Handler waitAuth = new Handler();
-
+   public Spinner spinnerSwitchCols;
+   public Spinner spinnerValueCols;
+   
    @Override
    protected void onCreate(Bundle savedInstanceState)
    {
-      // TODO Auto-generated method stub
       super.onCreate(savedInstanceState);
 
       mContext = this;
@@ -83,7 +86,7 @@ public class ConfigMain extends Activity
          Object obj = obj_in.readObject();
          obj_in.close();
 
-         Log.i("config", "config.data found");
+         //Log.i("config", "config.data found");
          if (obj instanceof ConfigDataOnly)
          {
             configDataOnly = (ConfigDataOnly) obj;
@@ -110,6 +113,18 @@ public class ConfigMain extends Activity
       configOkButton2 = (Button) findViewById(R.id.okconfig2);
       configOkButton2.setOnClickListener(configOkButtonOnClickListener);
 
+      spinnerSwitchCols = (Spinner) this.findViewById(R.id.config_switch_cols);   
+      ArrayAdapter<CharSequence> adapterSwitchCols = ArrayAdapter.createFromResource(this, R.array.colnum, R.layout.spinner_item);
+      adapterSwitchCols.setDropDownViewResource(R.layout.spinner_dropdown_item);
+      spinnerSwitchCols.setAdapter(adapterSwitchCols);
+      spinnerSwitchCols.setSelection(configDataOnly.switchCols);
+
+      spinnerValueCols = (Spinner) this.findViewById(R.id.config_value_cols);   
+      ArrayAdapter<CharSequence> adapterValueCols = ArrayAdapter.createFromResource(this, R.array.colnum, R.layout.spinner_item);
+      adapterValueCols.setDropDownViewResource(R.layout.spinner_dropdown_item);
+      spinnerValueCols.setAdapter(adapterValueCols);
+      spinnerValueCols.setSelection(configDataOnly.valueCols);
+      
       configData = new ConfigData();
       for (ConfigSwitchRow switchRow : configDataOnly.switchRows)
       {
@@ -168,8 +183,7 @@ public class ConfigMain extends Activity
       @Override
       public void onClick(View arg0)
       {
-         // TODO Auto-generated method stub
-         Log.i("text button", configOkButton.getText().toString());
+         //Log.i("text button", configOkButton.getText().toString());
          if (configOkButton.getText().toString().equals(getText(R.string.getConfig)))
          {
             showFHEMunits();
@@ -199,18 +213,16 @@ public class ConfigMain extends Activity
       @Override
       public void call(Object... args)
       {
-         Log.i("trace","authenticated");
          runOnUiThread(new Runnable()
          {
             @Override
             public void run()
             {
-               Log.i("trace","authenticated run");
                waitAuth.removeCallbacks(runnableWaitAuth);
                getAllSwitches(mySocket);
                getAllLightscenes(mySocket);
                getAllValues(mySocket);
-
+               
                findViewById(R.id.switches_header1).setVisibility(View.VISIBLE);
                findViewById(R.id.switches_header2).setVisibility(View.VISIBLE);
                findViewById(R.id.lightscenes_header1).setVisibility(View.VISIBLE);
@@ -219,7 +231,7 @@ public class ConfigMain extends Activity
                findViewById(R.id.values_header2).setVisibility(View.VISIBLE);
                findViewById(R.id.okconfig2).setVisibility(View.VISIBLE);
 
-               configOkButton.setText(R.string.save);          
+               configOkButton.setText(R.string.save);   
             }
          });
       }
@@ -309,7 +321,7 @@ public class ConfigMain extends Activity
          @Override
          public void call(Object... args)
          {
-            Log.i("get allSwitches", args[0].toString());
+            //Log.i("get allSwitches", args[0].toString());
             configSwitchAdapter.initData((JSONArray) args[0], configData.switches, configData.switchesDisabled);
             runOnUiThread(new Runnable()
             {
@@ -421,8 +433,7 @@ public class ConfigMain extends Activity
       mySocket.socket.disconnect();
       mySocket.socket.close();
 
-      Context context = ConfigMain.this;
-      AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
+      AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(mContext);
 
       //RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.hellowidget_layout);
       //appWidgetManager.updateAppWidget(mAppWidgetId, views);
@@ -435,7 +446,8 @@ public class ConfigMain extends Activity
       configDataOnly.switchRows = configSwitchAdapter.getData();
       configDataOnly.lightsceneRows = configLightsceneAdapter.getData();
       configDataOnly.valueRows = configValueAdapter.getData();
-
+      configDataOnly.switchCols = spinnerSwitchCols.getSelectedItemPosition();
+      configDataOnly.valueCols = spinnerValueCols.getSelectedItemPosition();
       try
       {
          String dir = getFilesDir().getAbsolutePath();
@@ -457,12 +469,12 @@ public class ConfigMain extends Activity
       Intent resultValue = new Intent();
       resultValue.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, mAppWidgetId);
       setResult(RESULT_OK, resultValue);
-      ComponentName thisAppWidget = new ComponentName(context.getPackageName(), WidgetProvider.class.getName());
-      Intent updateIntent = new Intent(context, WidgetProvider.class);
+      ComponentName thisAppWidget = new ComponentName(mContext.getPackageName(), WidgetProvider.class.getName());
+      Intent updateIntent = new Intent(mContext, WidgetProvider.class);
       int[] appWidgetIds = appWidgetManager.getAppWidgetIds(thisAppWidget);
       updateIntent.setAction("android.appwidget.action.APPWIDGET_UPDATE");
       updateIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, appWidgetIds);
-      context.sendBroadcast(updateIntent);
+      mContext.sendBroadcast(updateIntent);
       finish();
    }
 

@@ -9,10 +9,11 @@ public class ConfigData
 {
    public List<MySwitch> switches = new ArrayList<MySwitch>();
    public List<MySwitch> switchesDisabled = new ArrayList<MySwitch>();
+   public List<ArrayList<MySwitch>> switchesCols = new ArrayList<ArrayList<MySwitch>>();
    public MyLightScenes lightScenes = new MyLightScenes();
    public List<MyValue> values = new ArrayList<MyValue>();
+   public List<ArrayList<MyValue>> valuesCols= new ArrayList<ArrayList<MyValue>>();
    public List<MyValue> valuesDisabled = new ArrayList<MyValue>();
-   public String connectionPW = "";
 
    public MySwitch isInSwitches(String unit)
    {

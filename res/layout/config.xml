@@ -76,6 +76,7 @@
                 android:ems="10"
                 android:inputType="textPassword" />
         </LinearLayout>
+
         <Button
             android:id="@+id/okconfig"
             android:layout_width="200dp"
@@ -87,17 +88,42 @@
 
         <!-- Block of switches -->
 
-        <TextView
+        <LinearLayout
             android:id="@+id/switches_header1"
             android:layout_width="594dp"
             android:layout_height="wrap_content"
-            android:background="@color/conf_bg_header_1"
-            android:gravity="center"
-            android:text="@string/switches"
-            android:textColor="@color/conf_text_header_1"
-            android:textSize="24sp"
-            android:textStyle="bold"
-            android:visibility="gone" />
+            android:layout_marginTop="0dp"
+            android:orientation="horizontal"
+            android:visibility="gone" >
+
+            <TextView
+                android:layout_width="394dp"
+                android:layout_height="42dp"
+                android:background="@color/conf_bg_header_1"
+                android:gravity="center"
+                android:text="@string/switches"
+                android:textColor="@color/conf_text_header_1"
+                android:textSize="24sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="120dp"
+                android:layout_height="fill_parent"
+                android:background="@color/conf_bg_header_1"
+                android:gravity="right"
+                android:text="@string/columns"
+                android:textColor="@color/conf_text_header_1"
+                android:textSize="16sp"
+                android:paddingTop="12dp"
+                android:textStyle="bold" />
+
+            <Spinner
+                android:id="@+id/config_switch_cols"
+                android:background="@color/conf_bg_header_1"
+                android:layout_width="0dp"
+                android:layout_height="fill_parent"
+                android:layout_weight="1" />
+        </LinearLayout>
 
         <LinearLayout
             android:id="@+id/switches_header2"
@@ -163,14 +189,6 @@
             dslv:float_alpha="0.3"
             dslv:float_background_color="#FF666666"
             dslv:slide_shuffle_speed="0.3" />
-
-        <!--
-             <ListView
-            android:id="@+id/switches"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
-        -->
-
 
         <!-- Block of lightscenes -->
 
@@ -250,27 +268,44 @@
             dslv:float_background_color="#FF666666"
             dslv:slide_shuffle_speed="0.3" />
 
-        <!--
-             <ListView
-            android:id="@+id/lightscenes"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
-        -->
-
-
         <!-- Block of values -->
 
-        <TextView
+        <LinearLayout
             android:id="@+id/values_header1"
             android:layout_width="594dp"
             android:layout_height="wrap_content"
-            android:background="@color/conf_bg_header_1"
-            android:gravity="center"
-            android:text="@string/values"
-            android:textColor="@color/conf_text_header_1"
-            android:textSize="24sp"
-            android:textStyle="bold"
-            android:visibility="gone" />
+            android:layout_marginTop="0dp"
+            android:orientation="horizontal"
+            android:visibility="gone" >
+
+            <TextView
+                android:layout_width="394dp"
+                android:layout_height="42dp"
+                android:background="@color/conf_bg_header_1"
+                android:gravity="center"
+                android:text="@string/values"
+                android:textColor="@color/conf_text_header_1"
+                android:textSize="24sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="120dp"
+                android:layout_height="fill_parent"
+                android:background="@color/conf_bg_header_1"
+                android:gravity="right"
+                android:text="@string/columns"
+                android:textColor="@color/conf_text_header_1"
+                android:textSize="16sp"
+                android:paddingTop="12dp"
+                android:textStyle="bold" />
+
+            <Spinner
+                android:id="@+id/config_value_cols"
+                android:background="@color/conf_bg_header_1"
+                android:layout_width="0dp"
+                android:layout_height="fill_parent"
+                android:layout_weight="1" />
+        </LinearLayout>            
 
         <LinearLayout
             android:id="@+id/values_header2"
@@ -335,13 +370,6 @@
             dslv:float_alpha="0.3"
             dslv:float_background_color="#FF666666"
             dslv:slide_shuffle_speed="0.3" />
-
-        <!--
-             <ListView
-            android:id="@+id/values"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
-        -->
 
         <Button
             android:id="@+id/okconfig2"

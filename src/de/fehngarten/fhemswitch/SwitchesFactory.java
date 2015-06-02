@@ -11,12 +11,15 @@ class SwitchesFactory implements RemoteViewsFactory
 {
    //private static final String CLASSNAME = "SwitchesFactory.";
    private Context mContext = null;
+   private int colnum;
    //private List<MySwitch> switches = new ArrayList<MySwitch>();
 
-   public SwitchesFactory(Context context, Intent intent)
+   public SwitchesFactory(Context context, Intent intent, int colnum)
    {
       //Log.d(CLASSNAME, "started");
       mContext = context;
+      this.colnum = colnum;
+      //Log.i("colnum in factory",intent.getExtras().getString("colnum"));
    }
 
    public void initData()
@@ -53,23 +56,23 @@ class SwitchesFactory implements RemoteViewsFactory
    {
       //String methodname = "getCount";
       //Log.d(CLASSNAME + methodname, "switches size: " + Integer.toString(switches.size()));
-      return WidgetService.configData.switches.size();
+      return WidgetService.configData.switchesCols.get(colnum).size();
    }
 
    @Override
    public RemoteViews getViewAt(int position)
    {
-      //Log.i("switches Position: " + position + " of " + WidgetService.configData.switches.size(),WidgetService.configData.switches.get(position).icon);
+      //Log.i("switches Position: " + position + " in col " + String.valueOf(colnum),WidgetService.configData.switchesCols.get(colnum).get(position).name);
       RemoteViews mView = new RemoteViews(mContext.getPackageName(), R.layout.switch_row);
-      mView.setTextViewText(R.id.switch_name, WidgetService.configData.switches.get(position).name);
-      mView.setImageViewResource(R.id.switch_icon, WidgetService.icons.get(WidgetService.configData.switches.get(position).icon));
+      mView.setTextViewText(R.id.switch_name, WidgetService.configData.switchesCols.get(colnum).get(position).name);
+      mView.setImageViewResource(R.id.switch_icon, WidgetService.icons.get(WidgetService.configData.switchesCols.get(colnum).get(position).icon));
 
       final Intent fillInIntent = new Intent();
       fillInIntent.setAction(WidgetProvider.SEND_FHEM_COMMAND);
       final Bundle bundle = new Bundle();
-      bundle.putString(WidgetProvider.COMMAND, WidgetService.configData.switches.get(position).activateCmd());
+      bundle.putString(WidgetProvider.COMMAND, WidgetService.configData.switchesCols.get(colnum).get(position).activateCmd());
       bundle.putString(WidgetProvider.TYPE, "switch");
-      bundle.putString(WidgetProvider.UNIT, WidgetService.configData.switches.get(position).unit);
+      bundle.putString(WidgetProvider.UNIT, WidgetService.configData.switchesCols.get(colnum).get(position).unit);
       fillInIntent.putExtras(bundle);
       mView.setOnClickFillInIntent(R.id.switch_row, fillInIntent);
  
