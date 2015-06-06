@@ -19,6 +19,7 @@
     <string name="sel">Select</string>
     <string name="unit">Name - sort by drag &#038; drop</string>
     <string name="name">Displayed Name</string>
+    <string name="header">Header</string>
     <string name="command">Command</string>
     <string name="noconn">No connection to FHEM server</string>
     <string name="checkpw">Please check password</string>

@@ -16,6 +16,7 @@ public class WidgetProvider extends AppWidgetProvider
    public static final String COMMAND = "de.fehngarten.fhemswitch.COMMAND";
    public static final String UNIT = "de.fehngarten.fhemswitch.UNIT";
    public static final String TYPE = "de.fehngarten.fhemswitch.TYPE";
+   public static final String POS = "de.fehngarten.fhemswitch.POS";
    public static final String URL = "de.fehngarten.fhemswitch.URL";
    public static final String OPEN_URL = "de.fehngarten.fhemswitch.OPEN_URL";
    private static Boolean startService = true;
@@ -48,19 +49,20 @@ public class WidgetProvider extends AppWidgetProvider
       }
       else if (intent.getAction().equals(SEND_FHEM_COMMAND))
       {
-         //Log.i("trace", "switch pressed");
+         //Log.i("TYPE", intent.getExtras().getString(TYPE));
          String cmd = intent.getExtras().getString(COMMAND);
-         
-         String device;
-         if (intent.getExtras().getString(COMMAND).equals("switch"))
+         String device = "";
+         int position = -1;
+         if (intent.getExtras().getString(TYPE).equals("switch"))
          {
             device = intent.getExtras().getString(UNIT);
          }
-         else
+         else if (intent.getExtras().getString(TYPE).equals("lightscene"))
          {
-            device = "";
+            Log.i("POS",intent.getExtras().getString(POS));
+            position = Integer.parseInt(intent.getExtras().getString(POS));
          }
-         WidgetService.sendCommand(cmd,device);
+         WidgetService.sendCommand(cmd,device,position);
       }
       else if (intent.getAction().equals(OPEN_URL))
       {

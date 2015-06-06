@@ -15,9 +15,9 @@ public class MyLightScenes
       itemsCount = 0;
    }
 
-   public MyLightScene newLightScene(String name, String unit)
+   public MyLightScene newLightScene(String name, String unit, Boolean showHeader)
    {
-      MyLightScene myLightScene = new MyLightScene(name, unit, false);
+      MyLightScene myLightScene = new MyLightScene(name, unit, false, showHeader);
       lightScenes.add(myLightScene);
       return myLightScene;
    }
@@ -31,14 +31,17 @@ public class MyLightScenes
          if (lightScene.enabled)
          {
             String lightSceneUnit = lightScene.unit;
-            items.add(new Item(lightScene.unit, lightScene.name, lightScene.unit, true, false));
-            itemsCount++;
+            if (lightScene.showHeader)
+            {
+               items.add(new Item(lightScene.unit, lightScene.name, lightScene.unit, true, false, lightScene.showHeader));
+               itemsCount++;
+            }
             for (MyLightScene.Member member : lightScene.members)
             {
                if (member.enabled)
                {
                   lightScene.enabled = true;
-                  items.add(new Item(lightSceneUnit, member.name, member.unit, false, false));
+                  items.add(new Item(lightSceneUnit, member.name, member.unit, false, false, false));
                   itemsCount++;
                }
             }
@@ -63,14 +66,16 @@ public class MyLightScenes
       String unit;
       Boolean header;
       Boolean activ;
+      Boolean showHeader;
 
-      public Item(String lightSceneName, String name, String unit, Boolean header, Boolean activ)
+      public Item(String lightSceneName, String name, String unit, Boolean header, Boolean activ, Boolean showHeader)
       {
          this.lightSceneName = lightSceneName;
          this.name = name;
          this.unit = unit;
          this.header = header;
          this.activ = activ;
+         this.showHeader = showHeader;
       }
    }
 
@@ -97,14 +102,16 @@ public class MyLightScenes
       public String name;
       public String unit;
       public Boolean enabled;
+      public Boolean showHeader;
 
       public ArrayList<Member> members = new ArrayList<Member>();
 
-      public MyLightScene(String name, String unit, Boolean enabled)
+      public MyLightScene(String name, String unit, Boolean enabled, Boolean showHeader)
       {
          this.name = name;
          this.unit = unit;
          this.enabled = enabled;
+         this.showHeader = showHeader;
       }
 
       public void addMember(String name, String unit, Boolean enabled)

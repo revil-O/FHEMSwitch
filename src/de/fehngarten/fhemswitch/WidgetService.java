@@ -30,8 +30,9 @@ import android.widget.RemoteViews;
 import com.github.nkzawa.emitter.Emitter;
 import com.github.nkzawa.socketio.client.Socket;
 
+import de.fehngarten.fhemswitch.MyLightScenes.Item;
 import de.fehngarten.fhemswitch.MyLightScenes.MyLightScene;
-//import android.util.Log;
+import android.util.Log;
 
 public class WidgetService extends Service
 {
@@ -58,7 +59,7 @@ public class WidgetService extends Service
    
    private static AppWidgetManager appWidgetManager;
    private static int[] allWidgetIds;
-   private Handler handler = new Handler();
+   private static Handler handler = new Handler();
    private static Context context;
 
    private static ArrayList<String> switchesList = new ArrayList<String>();
@@ -170,7 +171,7 @@ public class WidgetService extends Service
       {
          if (lightsceneRow.isHeader)
          {
-            newLightScene = configData.lightScenes.newLightScene(lightsceneRow.name, lightsceneRow.unit);
+            newLightScene = configData.lightScenes.newLightScene(lightsceneRow.name, lightsceneRow.unit, lightsceneRow.showHeader);
          }
          else
          {
@@ -245,16 +246,18 @@ public class WidgetService extends Service
       }
    }
 
-   public static void sendCommand(String cmd, String unit)
+   public static void sendCommand(String cmd, String unit, int position)
    {
       mySocket.sendCommand(cmd);
       if (unit.length() > 0)
       {
          for (MySwitch mySwitch : configData.switches)
          {
+            //Log.i("clicked unit",unit + " " + mySwitch.unit); 
             if (mySwitch.unit.equals(unit))
             {
                mySwitch.setIcon("set_toggle");
+               //Log.i("trace","set toggle for " + unit);
                //AppWidgetManager mgr = AppWidgetManager.getInstance(context);
 
                for (int id : allWidgetIds)
@@ -267,8 +270,37 @@ public class WidgetService extends Service
             }
          }         
       }
+      else if (position > -1)
+      {
+         configData.lightScenes.items.get(position).activ = true;
+
+         for (int id : allWidgetIds)
+         {
+            appWidgetManager.notifyAppWidgetViewDataChanged(id, R.id.lightscenes);
+         }
+         handler.postDelayed(deactLightscene, 500);
+      }
    }
 
+   public static Runnable deactLightscene = new Runnable()
+   {
+      @Override
+      public void run()
+      {
+         //String methodname = "checkSocketTimer";
+         //Log.d(CLASSNAME + methodname, "started");
+         for (Item item : configData.lightScenes.items)
+         {
+            item.activ = false;
+         }
+
+         for (int id : allWidgetIds)
+         {
+            appWidgetManager.notifyAppWidgetViewDataChanged(id, R.id.lightscenes);
+         }
+      }
+   };
+   
    @SuppressWarnings("deprecation")
    @SuppressLint("NewApi")
    private void initSwitches(int widgetId)
@@ -601,6 +633,7 @@ public class WidgetService extends Service
                      }
                   }
                }
+               /*
                else if (lightScenesList.contains(unit))
                {
                   for (MyLightScenes.MyLightScene lightScene : configData.lightScenes.lightScenes)
@@ -616,7 +649,7 @@ public class WidgetService extends Service
                      }
                   }
                }
-
+               */
                if (valuesList.contains(unit))
                {
                   for (MyValue myValue : configData.values)

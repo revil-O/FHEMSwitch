@@ -85,6 +85,7 @@ class LightScenesFactory implements RemoteViewsService.RemoteViewsFactory
          final Bundle bundle = new Bundle();
          bundle.putString(WidgetProvider.URL,WidgetService.fhemUrl + "?detail=" + WidgetService.configData.lightScenes.items.get(position).unit);
          bundle.putString(WidgetProvider.TYPE, "lightScene");
+         bundle.putString(WidgetProvider.POS, Integer.toString(position));
          fillInIntent.putExtras(bundle);
          mView.setOnClickFillInIntent(R.id.lightscene_name, fillInIntent);
       }
@@ -93,9 +94,14 @@ class LightScenesFactory implements RemoteViewsService.RemoteViewsFactory
          mView.setTextViewText(R.id.lightscene_name, WidgetService.configData.lightScenes.items.get(position).name);
          mView.setTextColor(R.id.lightscene_name, 0xFF000088);
          mView.setFloat(R.id.lightscene_name,"setTextSize",16);
+
          if (WidgetService.configData.lightScenes.items.get(position).activ)
          {
-            if (position == WidgetService.configData.lightScenes.itemsCount - 1)
+            if (position == 0)
+            {
+               mView.setInt(R.id.lightscene_name, "setBackgroundResource", R.drawable.activefirst);
+            }   
+            else if (position == WidgetService.configData.lightScenes.itemsCount - 1)
             {
                mView.setInt(R.id.lightscene_name, "setBackgroundResource", R.drawable.activelast);
             }
@@ -106,7 +112,11 @@ class LightScenesFactory implements RemoteViewsService.RemoteViewsFactory
          }
          else
          {
-            if (position == WidgetService.configData.lightScenes.itemsCount - 1)
+            if (position == 0)
+            {
+               mView.setInt(R.id.lightscene_name, "setBackgroundResource", R.drawable.inactivefirst);
+            }    
+            else if (position == WidgetService.configData.lightScenes.itemsCount - 1)
             {
                mView.setInt(R.id.lightscene_name, "setBackgroundResource", R.drawable.inactivelast);
             }
@@ -118,6 +128,8 @@ class LightScenesFactory implements RemoteViewsService.RemoteViewsFactory
             fillInIntent.setAction(WidgetProvider.SEND_FHEM_COMMAND);
             final Bundle bundle = new Bundle();
             bundle.putString(WidgetProvider.COMMAND, WidgetService.configData.lightScenes.activateCmd(position));
+            bundle.putString(WidgetProvider.TYPE, "lightscene");
+            bundle.putString(WidgetProvider.POS, Integer.toString(position));
             fillInIntent.putExtras(bundle);
             mView.setOnClickFillInIntent(R.id.lightscene_name, fillInIntent);
          }

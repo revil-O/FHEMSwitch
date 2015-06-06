@@ -27,6 +27,7 @@ import android.graphics.Point;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
+import android.view.Display;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
@@ -35,6 +36,7 @@ import android.widget.EditText;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.content.pm.ActivityInfo;
 
 import com.github.nkzawa.emitter.Emitter;
 import com.github.nkzawa.socketio.client.Ack;
@@ -69,9 +71,19 @@ public class ConfigMain extends Activity
    {
       super.onCreate(savedInstanceState);
 
+      
       mContext = this;
       setResult(RESULT_CANCELED);
-
+      
+      //int height = size.y;
+      int screenWidth = getResources().getDisplayMetrics().widthPixels; 
+      float density  = getResources().getDisplayMetrics().density;
+      float dpWidth  = screenWidth / density;    
+      
+      if (dpWidth < 596)
+      {
+         this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+      }
       setContentView(R.layout.config);
 
       urlpl = (EditText) findViewById(R.id.urlpl);
@@ -144,7 +156,7 @@ public class ConfigMain extends Activity
          //Log.i("lightscene row",lightsceneRow.isHeader.toString());
          if (lightsceneRow.isHeader)
          {
-            newLightScene = configData.lightScenes.newLightScene(lightsceneRow.name, lightsceneRow.unit);
+            newLightScene = configData.lightScenes.newLightScene(lightsceneRow.name, lightsceneRow.unit, lightsceneRow.showHeader);
          }
          else
          {
@@ -366,13 +378,13 @@ public class ConfigMain extends Activity
                   public void call(Object... args)
                   {
                      //Log.i("get allLightscenes", args[0].toString());
-                     lightsceneRowsTemp.add(new ConfigLightsceneRow(unit, unit, false, true));
+                     lightsceneRowsTemp.add(new ConfigLightsceneRow(unit, unit, false, true, true));
                      ArrayList<String> lightscenesMember = convertJSONarray((JSONArray) args[0]);
                      for (String unit : lightscenesMember)
                      {
                         if (!unit.equals(""))
                         {   
-                           lightsceneRowsTemp.add(new ConfigLightsceneRow(unit, unit, false, false));
+                           lightsceneRowsTemp.add(new ConfigLightsceneRow(unit, unit, false, false, false));
                         }
                      }
                      lsCounter++;

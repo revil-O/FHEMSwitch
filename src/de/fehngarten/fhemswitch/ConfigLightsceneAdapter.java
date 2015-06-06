@@ -7,7 +7,7 @@ import de.fehngarten.fhemswitch.MyLightScenes.MyLightScene;
 import android.content.Context;
 import android.text.Editable;
 import android.text.TextWatcher;
-//import android.util.Log;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -38,12 +38,12 @@ public class ConfigLightsceneAdapter extends BaseAdapter
       {
          if (isInFhem(FHEMlightsceneRows, lightScene.unit,true))
          {
-            lightsceneRows.add(new ConfigLightsceneRow(lightScene.unit, lightScene.name, false, true));
+            lightsceneRows.add(new ConfigLightsceneRow(lightScene.unit, lightScene.name, false, true,lightScene.showHeader));
             for (MyLightScene.Member member : lightScene.members)
             {
                if (isInFhem(FHEMlightsceneRows, member.unit,false))
                {
-                  lightsceneRows.add(new ConfigLightsceneRow(member.unit, member.name, member.enabled, false));
+                  lightsceneRows.add(new ConfigLightsceneRow(member.unit, member.name, member.enabled, false, false));
                }
             }
             // check for new members
@@ -58,7 +58,7 @@ public class ConfigLightsceneAdapter extends BaseAdapter
                {
                   if (!lightsceneRow.unit.equals("") && !lightScene.isMember(lightsceneRow.unit))
                   {
-                     lightsceneRows.add(new ConfigLightsceneRow(lightsceneRow.unit, lightsceneRow.unit, false, false));   
+                     lightsceneRows.add(new ConfigLightsceneRow(lightsceneRow.unit, lightsceneRow.unit, false, false, false));   
                   }
                }
             }
@@ -73,7 +73,7 @@ public class ConfigLightsceneAdapter extends BaseAdapter
             if (!lightsceneRow.unit.equals("") && !configData.lightScenes.isLightScene(lightsceneRow.unit))
             {
                isNew = true;
-               lightsceneRows.add(new ConfigLightsceneRow(lightsceneRow.unit, lightsceneRow.unit, false, true));
+               lightsceneRows.add(new ConfigLightsceneRow(lightsceneRow.unit, lightsceneRow.unit, false, true, true));
             }
             else
             {
@@ -82,7 +82,7 @@ public class ConfigLightsceneAdapter extends BaseAdapter
          }
          else if (isNew)
          {
-            lightsceneRows.add(new ConfigLightsceneRow(lightsceneRow.unit, lightsceneRow.unit, false, false));   
+            lightsceneRows.add(new ConfigLightsceneRow(lightsceneRow.unit, lightsceneRow.unit, false, false, false));   
          }
       }
    }
@@ -175,6 +175,7 @@ public class ConfigLightsceneAdapter extends BaseAdapter
          lightsceneHolder.lightscene_unit = (TextView) rowView.findViewById(R.id.config_lightscene_unit);
          lightsceneHolder.lightscene_name = (EditText) rowView.findViewById(R.id.config_lightscene_name);
          lightsceneHolder.lightscene_enabled = (CheckBox) rowView.findViewById(R.id.config_lightscene_enabled);
+         lightsceneHolder.lightscene_header = (CheckBox) rowView.findViewById(R.id.config_lightscene_header);
       }
       else
       {
@@ -187,6 +188,8 @@ public class ConfigLightsceneAdapter extends BaseAdapter
       if (lightsceneRow.isHeader)
       {
          lightsceneHolder.lightscene_enabled.setVisibility(View.INVISIBLE);
+         lightsceneHolder.lightscene_header.setVisibility(View.VISIBLE);
+         lightsceneHolder.lightscene_header.setChecked(lightsceneRow.showHeader);
          rowView.setBackgroundColor(mContext.getResources().getColor(R.color.conf_bg_header_3));
         
       }
@@ -206,6 +209,16 @@ public class ConfigLightsceneAdapter extends BaseAdapter
          }
       });
 
+      lightsceneHolder.lightscene_header.setOnClickListener(new OnClickListener()
+      {
+         @Override
+         public void onClick(View arg0)
+         {
+            //Log.i("isChecked",Boolean.toString(lightsceneHolder.lightscene_header.isChecked()));
+            getItem(lightsceneHolder.ref).showHeader = lightsceneHolder.lightscene_header.isChecked();
+         }
+      });
+      
       lightsceneHolder.lightscene_name.addTextChangedListener(new TextWatcher()
       {
          @Override
@@ -290,6 +303,7 @@ public class ConfigLightsceneAdapter extends BaseAdapter
    
    private class LightsceneHolder
    {
+      CheckBox lightscene_header;
       CheckBox lightscene_enabled;
       TextView lightscene_unit;
       EditText lightscene_name;
