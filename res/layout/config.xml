@@ -8,7 +8,7 @@
         android:layout_height="wrap_content"
         android:orientation="vertical" >
 
-        <!-- URL for node.js -->
+        <!-- URL for node.js +++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
 
         <LinearLayout
             android:layout_width="fill_parent"
@@ -31,7 +31,7 @@
                 android:inputType="text" />
         </LinearLayout>
 
-        <!-- URL for node.pl -->
+        <!-- URL for node.pl ++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
 
         <LinearLayout
             android:layout_width="fill_parent"
@@ -54,7 +54,7 @@
                 android:inputType="textUri" />
         </LinearLayout>
 
-        <!-- connection password -->
+        <!-- connection password +++++++++++++++++++++++++++++++++++++++++++++++++++++++++- -->
 
         <LinearLayout
             android:layout_width="fill_parent"
@@ -86,7 +86,113 @@
             android:background="@drawable/configbutton"
             android:text="@string/getConfig" />
 
-        <!-- Block of switches -->
+        <!-- Layout menu +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+
+        <LinearLayout
+            android:id="@+id/layout_block"
+            android:layout_width="594dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="0dp"
+            android:orientation="vertical"
+            android:visibility="gone" >
+
+            <LinearLayout
+                android:layout_width="594dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="0dp"
+                android:orientation="horizontal" >
+
+                <LinearLayout
+                    android:layout_width="297dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="0dp"
+                    android:orientation="vertical" >
+
+                    <TextView
+                        android:layout_width="297dp"
+                        android:layout_height="40dp"
+                        android:background="@color/conf_bg_header_1"
+                        android:text="@string/portrait"
+                        android:textColor="@color/conf_text_header_1"
+                        android:textSize="24sp"
+                        android:textStyle="bold" />
+
+                    <RadioGroup
+                        android:id="@+id/layout_portrait"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" >
+
+                        <RadioButton
+                            android:id="@+id/layout_portrait_0"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:checked="true"
+                            android:tag="@string/LAYOUT_HORIZONTAL"
+                            android:text="@string/horizontal" />
+
+                        <RadioButton
+                            android:id="@+id/layout_portrait_1"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:tag="@string/LAYOUT_VERTICAL"
+                            android:text="@string/vertical" />
+
+                        <RadioButton
+                            android:id="@+id/layout_portrait_2"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:tag="@string/LAYOUT_MIXED"
+                            android:text="@string/mixed" />
+                    </RadioGroup>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="297dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="0dp"
+                    android:orientation="vertical" >
+
+                    <TextView
+                        android:layout_width="297dp"
+                        android:layout_height="40dp"
+                        android:background="@color/conf_bg_header_1"
+                        android:text="@string/landscape"
+                        android:textColor="@color/conf_text_header_1"
+                        android:textSize="24sp"
+                        android:textStyle="bold" />
+
+                    <RadioGroup
+                        android:id="@+id/layout_landscape"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" >
+
+                        <RadioButton
+                            android:id="@+id/layout_landscape_0"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:checked="true"
+                            android:tag="@string/LAYOUT_HORIZONTAL"
+                            android:text="@string/horizontal" />
+
+                        <RadioButton
+                            android:id="@+id/layout_landscape_1"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:tag="@string/LAYOUT_VERTICAL"
+                            android:text="@string/vertical" />
+
+                        <RadioButton
+                            android:id="@+id/layout_landscape_2"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:tag="@string/LAYOUT_MIXED"
+                            android:text="@string/mixed" />
+                    </RadioGroup>
+                </LinearLayout>
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Block of switches +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
 
         <LinearLayout
             android:id="@+id/switches_header1"
@@ -98,7 +204,7 @@
 
             <TextView
                 android:layout_width="394dp"
-                android:layout_height="42dp"
+                android:layout_height="40dp"
                 android:background="@color/conf_bg_header_1"
                 android:gravity="center"
                 android:text="@string/switches"
@@ -111,18 +217,18 @@
                 android:layout_height="fill_parent"
                 android:background="@color/conf_bg_header_1"
                 android:gravity="right"
+                android:paddingTop="12dp"
                 android:text="@string/columns"
                 android:textColor="@color/conf_text_header_1"
                 android:textSize="16sp"
-                android:paddingTop="12dp"
                 android:textStyle="bold" />
 
             <Spinner
                 android:id="@+id/config_switch_cols"
-                android:background="@color/conf_bg_header_1"
                 android:layout_width="0dp"
                 android:layout_height="fill_parent"
-                android:layout_weight="1" />
+                android:layout_weight="1"
+                android:background="@color/conf_bg_header_1" />
         </LinearLayout>
 
         <LinearLayout
@@ -190,7 +296,7 @@
             dslv:float_background_color="#FF666666"
             dslv:slide_shuffle_speed="0.3" />
 
-        <!-- Block of lightscenes -->
+        <!-- Block of lightscenes +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
 
         <TextView
             android:id="@+id/lightscenes_header1"
@@ -245,9 +351,9 @@
                 android:layout_height="wrap_content"
                 android:background="@color/conf_bg_header_2"
                 android:paddingLeft="12dp"
+                android:text="@string/header"
                 android:textColor="@color/conf_text_header_2"
                 android:textSize="16sp"
-                android:text="@string/header"
                 android:textStyle="bold" />
         </LinearLayout>
 
@@ -269,7 +375,7 @@
             dslv:float_background_color="#FF666666"
             dslv:slide_shuffle_speed="0.3" />
 
-        <!-- Block of values -->
+        <!-- Block of values +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
 
         <LinearLayout
             android:id="@+id/values_header1"
@@ -281,7 +387,7 @@
 
             <TextView
                 android:layout_width="394dp"
-                android:layout_height="42dp"
+                android:layout_height="40dp"
                 android:background="@color/conf_bg_header_1"
                 android:gravity="center"
                 android:text="@string/values"
@@ -294,19 +400,19 @@
                 android:layout_height="fill_parent"
                 android:background="@color/conf_bg_header_1"
                 android:gravity="right"
+                android:paddingTop="12dp"
                 android:text="@string/columns"
                 android:textColor="@color/conf_text_header_1"
                 android:textSize="16sp"
-                android:paddingTop="12dp"
                 android:textStyle="bold" />
 
             <Spinner
                 android:id="@+id/config_value_cols"
-                android:background="@color/conf_bg_header_1"
                 android:layout_width="0dp"
                 android:layout_height="fill_parent"
-                android:layout_weight="1" />
-        </LinearLayout>            
+                android:layout_weight="1"
+                android:background="@color/conf_bg_header_1" />
+        </LinearLayout>
 
         <LinearLayout
             android:id="@+id/values_header2"

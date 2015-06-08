@@ -102,5 +102,5 @@ public class WidgetProvider extends AppWidgetProvider
       AppWidgetManager mgr = AppWidgetManager.getInstance(context);
       return mgr.getAppWidgetIds(thisWidget).length;
    }
-
+   
 }

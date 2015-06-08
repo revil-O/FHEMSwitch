@@ -1,6 +1,8 @@
 package de.fehngarten.fhemswitch;
 
 import java.io.File;
+import android.widget.RadioGroup;
+import android.widget.RadioButton;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -26,8 +28,6 @@ import android.content.Intent;
 import android.graphics.Point;
 import android.os.Bundle;
 import android.os.Handler;
-import android.util.Log;
-import android.view.Display;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
@@ -44,6 +44,7 @@ import com.github.nkzawa.socketio.client.Socket;
 import com.mobeta.android.dslv.DragSortListView;
 
 import de.fehngarten.fhemswitch.MyLightScenes.MyLightScene;
+import android.util.Log;
 
 public class ConfigMain extends Activity
 {
@@ -65,6 +66,8 @@ public class ConfigMain extends Activity
    public Handler waitAuth = new Handler();
    public Spinner spinnerSwitchCols;
    public Spinner spinnerValueCols;
+   public RadioGroup radioLayoutLandscape ;
+   public RadioGroup radioLayoutPortrait ;
    
    @Override
    protected void onCreate(Bundle savedInstanceState)
@@ -96,14 +99,15 @@ public class ConfigMain extends Activity
          ObjectInputStream obj_in = new ObjectInputStream(f_in);
 
          Object obj = obj_in.readObject();
-         obj_in.close();
+         obj_in.close(); 
 
          //Log.i("config", "config.data found");
          if (obj instanceof ConfigDataOnly)
          {
             configDataOnly = (ConfigDataOnly) obj;
+            Log.i("layouttype1",Integer.toString(configDataOnly.layoutPortrait) + " - " + configDataOnly.layoutLandscape);
          }
-      }
+      } 
       catch (FileNotFoundException e)
       {
          Log.i("config", "config.data not found");
@@ -113,9 +117,8 @@ public class ConfigMain extends Activity
       {
          e.printStackTrace();
       }
-
       // Read object using ObjectInputStream
-
+      
       urljs.setText(configDataOnly.urljs, TextView.BufferType.EDITABLE);
       urlpl.setText(configDataOnly.urlpl, TextView.BufferType.EDITABLE);
       connectionPW.setText(configDataOnly.connectionPW, TextView.BufferType.EDITABLE);
@@ -186,8 +189,14 @@ public class ConfigMain extends Activity
       // If they gave us an intent without the widget id, just bail.
       if (mAppWidgetId == AppWidgetManager.INVALID_APPWIDGET_ID)
       {
-         //finish();
+         //finish(); 
       }
+      radioLayoutLandscape = (RadioGroup) findViewById(R.id.layout_landscape);
+      radioLayoutPortrait = (RadioGroup) findViewById(R.id.layout_portrait); 
+      Log.i("layouttype2",configDataOnly.layoutPortrait + " - " + configDataOnly.layoutLandscape);
+      
+      ((RadioButton)radioLayoutLandscape.getChildAt(configDataOnly.layoutLandscape)).setChecked(true);
+      ((RadioButton)radioLayoutPortrait.getChildAt(configDataOnly.layoutPortrait)).setChecked(true);
    }
 
    private Button.OnClickListener configOkButtonOnClickListener = new Button.OnClickListener()
@@ -235,6 +244,7 @@ public class ConfigMain extends Activity
                getAllLightscenes(mySocket);
                getAllValues(mySocket);
                
+               findViewById(R.id.layout_block).setVisibility(View.VISIBLE);
                findViewById(R.id.switches_header1).setVisibility(View.VISIBLE);
                findViewById(R.id.switches_header2).setVisibility(View.VISIBLE);
                findViewById(R.id.lightscenes_header1).setVisibility(View.VISIBLE);
@@ -248,7 +258,7 @@ public class ConfigMain extends Activity
          });
       }
    };     
-   
+     
    private void showFHEMunits()
    {
       try
@@ -460,6 +470,12 @@ public class ConfigMain extends Activity
       configDataOnly.valueRows = configValueAdapter.getData();
       configDataOnly.switchCols = spinnerSwitchCols.getSelectedItemPosition();
       configDataOnly.valueCols = spinnerValueCols.getSelectedItemPosition();
+      
+      RadioButton radioLayoutPortraitButton = (RadioButton) findViewById(radioLayoutPortrait.getCheckedRadioButtonId());
+      RadioButton radioLayoutLandscapeButton = (RadioButton) findViewById(radioLayoutLandscape.getCheckedRadioButtonId());
+      configDataOnly.layoutPortrait = Integer.valueOf(radioLayoutPortraitButton.getTag().toString());
+      configDataOnly.layoutLandscape = Integer.valueOf(radioLayoutLandscapeButton.getTag().toString());
+
       try
       {
          String dir = getFilesDir().getAbsolutePath();

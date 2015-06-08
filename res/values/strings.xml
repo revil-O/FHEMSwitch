@@ -28,7 +28,16 @@
     <string name="urlcheck">please check URL</string>
     <string name="fileerr">Error at saving configuration:</string>
     <string name="onlinecheck">is this device online</string>
-    
+
+    <string name="landscape">Layout Landscape</string>
+    <string name="portrait">Layout Portrait</string>
+    <string name="horizontal">horizontal</string>
+    <string name="vertical">vertical</string>
+    <string name="mixed">mixed</string>
+    <string name="LAYOUT_HORIZONTAL">0</string>
+    <string name="LAYOUT_VERTICAL">1</string>
+    <string name="LAYOUT_MIXED">2</string>
+ 
     <string-array name="commands">
         <item>toggle</item>
         <item>on</item>

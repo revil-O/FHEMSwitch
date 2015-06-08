@@ -2,7 +2,7 @@
 <appwidget-provider     
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:minHeight="110dp" 
-    android:initialLayout="@layout/main_layout" 
+    android:initialLayout="@layout/main_layout_horizontal" 
     android:minWidth="110dp"
     android:resizeMode="horizontal|vertical"
     android:icon="@drawable/ic_launcher" 

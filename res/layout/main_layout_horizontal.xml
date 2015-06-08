@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:background="@drawable/myshape"
+    android:orientation="vertical"
+    android:paddingBottom="8dp"
+    android:paddingRight="8dp"
+    android:paddingTop="8dp" >
+
+    <TextView
+        android:id="@+id/noconn"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="@string/initruns"
+        android:textColor="#ffcc4343"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:visibility="gone" />
+
+    <ListView
+        android:id="@+id/switches0"
+        android:layout_width="168dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:visibility="gone"
+        android:layout_marginLeft="8dp" />
+
+    <ListView
+        android:id="@+id/switches1"
+        android:layout_width="168dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_marginLeft="8dp"
+        android:visibility="gone"
+        android:layout_toRightOf="@id/switches0" />
+    
+    <ListView
+        android:id="@+id/switches2"
+        android:layout_width="168dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_marginLeft="8dp"
+        android:visibility="gone"
+        android:layout_toRightOf="@id/switches1" />
+
+    <ListView
+        android:id="@+id/lightscenes"
+        android:layout_width="150dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_marginLeft="8dp"
+        android:layout_toRightOf="@+id/switches2"
+        android:visibility="gone" />
+
+    <ListView
+        android:id="@+id/values0"
+        android:layout_width="160dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_marginLeft="8dp"
+        android:visibility="gone"
+        android:layout_toRightOf="@id/lightscenes" />
+    <ListView
+        android:id="@+id/values1"
+        android:layout_width="160dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_marginLeft="8dp"
+        android:visibility="gone"
+        android:layout_toRightOf="@id/values0" />
+    <ListView
+        android:id="@+id/values2"
+        android:layout_width="160dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_marginLeft="8dp"
+        android:visibility="gone"
+        android:layout_toRightOf="@id/values1" />
+
+</RelativeLayout>

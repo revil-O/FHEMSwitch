@@ -7,7 +7,6 @@ import de.fehngarten.fhemswitch.MyLightScenes.MyLightScene;
 import android.content.Context;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -16,6 +15,7 @@ import android.widget.BaseAdapter;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
+//import android.util.Log;
 
 public class ConfigLightsceneAdapter extends BaseAdapter
 {
