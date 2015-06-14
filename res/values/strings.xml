@@ -21,7 +21,7 @@
     <string name="name">Displayed Name</string>
     <string name="header">Header</string>
     <string name="command">Command</string>
-    <string name="noconn">No connection to FHEM server</string>
+    <string name="noconn">No connection to FHEM server. Tip for reconnection attempt.</string>
     <string name="checkpw">Please check password</string>
     <string name="initruns">Initialising runs</string>
     <string name="urlerr">The typed URL is invalid</string>

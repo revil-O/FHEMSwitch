@@ -33,7 +33,8 @@ import com.github.nkzawa.socketio.client.Socket;
 
 import de.fehngarten.fhemswitch.MyLightScenes.Item;
 import de.fehngarten.fhemswitch.MyLightScenes.MyLightScene;
-//import android.util.Log;
+
+import android.util.Log;
 
 public class WidgetService extends Service
 {
@@ -108,9 +109,9 @@ public class WidgetService extends Service
 
    public void onStart(Intent intent, int startId)
    {
-       doStart();  
+      doStart();
    }
-   
+
    public void doStart()
    {
       //Log.i("trace", "onStart fired");
@@ -280,7 +281,7 @@ public class WidgetService extends Service
          mySocket = null;
       }
 
-      initWidget();
+      //initWidget();
       handler.postDelayed(checkSocketTimer, 2000);
    }
 
@@ -524,6 +525,17 @@ public class WidgetService extends Service
          initSwitches(widgetId);
          initLightScenes(widgetId);
          initValues(widgetId);
+
+         RemoteViews mView = new RemoteViews(context.getPackageName(), layoutId);
+         Intent clickIntent = new Intent(this.getApplicationContext(), WidgetProvider.class);
+
+         clickIntent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
+         clickIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, allWidgetIds);
+
+         PendingIntent pendingIntent = PendingIntent.getBroadcast(getApplicationContext(), 0, clickIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+         mView.setOnClickPendingIntent(R.id.noconn, pendingIntent);
+         appWidgetManager.updateAppWidget(widgetId, mView);
+ 
       }
    }
 
@@ -537,6 +549,8 @@ public class WidgetService extends Service
       {
          mySocket.socket.disconnect();
          mySocket.socket.close();
+         mySocket.socket.off();
+         mySocket = null;
       }
       initSocket();
       initListviews();
@@ -642,11 +656,10 @@ public class WidgetService extends Service
 
    private void initSocket()
    {
-      //String methodname = "initSocket";
-      //Log.d(CLASSNAME + methodname, "started");
+      String methodname = "initSocket";
+      Log.d(methodname, "started");
 
       mySocket = new MySocket(websocketUrl);
-
       mySocket.socket.on(Socket.EVENT_CONNECT, new Emitter.Listener()
       {
          @Override
@@ -657,7 +670,7 @@ public class WidgetService extends Service
             {
                mySocket.socket.emit("authentication", pw);
             }
-            //Log.i("socket", "connected");
+            Log.i("socket", "connected");
             try
             {
                mySocket.requestValuesOnce(switchesList);
@@ -682,6 +695,41 @@ public class WidgetService extends Service
             //Log.i("socket", "disconnected");
             try
             {
+               setVisibility("disconnected");
+            }
+            catch (NullPointerException e)
+            {
+               //ignore this exception
+            }
+         }
+      });
+      mySocket.socket.on(Socket.EVENT_RECONNECT_FAILED, new Emitter.Listener()
+      {
+         @Override
+         public void call(Object... args)
+         {
+            Log.i("socket", "reconnect failed");
+            try
+            {
+               setVisibility("disconnected");
+            }
+            catch (NullPointerException e)
+            {
+               //ignore this exception
+            }
+         }
+      });
+      mySocket.socket.on(Socket.EVENT_CONNECT_ERROR, new Emitter.Listener()
+      {
+         @Override
+         public void call(Object... args)
+         {
+            Log.i("socket", "connect error");
+            try
+            {
+               mySocket.socket.close();
+               mySocket.socket.off();
+               mySocket = null;
                setVisibility("disconnected");
             }
             catch (NullPointerException e)

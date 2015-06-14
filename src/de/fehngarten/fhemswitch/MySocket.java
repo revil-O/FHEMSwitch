@@ -22,7 +22,7 @@ public class MySocket
       try
       {
          socket = null;
-         //options.secure = true;
+         options.reconnection = false;
          socket = IO.socket(url, options);        
          socket.connect();
       }

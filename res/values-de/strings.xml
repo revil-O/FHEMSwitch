@@ -21,7 +21,7 @@
     <string name="name">Angezeigter Name</string>
     <string name="header">Header</string>
     <string name="command">Befehl</string>
-    <string name="noconn">Keine Verbindung zum FHEM Server</string>
+    <string name="noconn">Keine Verbindung zum FHEM Server. Antippen um Neuverbindung zu versuchen.</string>
     <string name="checkpw">Bitte Passwort prüfen</string>
     <string name="initruns">Initialisierung läuft</string>
     <string name="urlerr">Die angegbene URL ist ungültig</string>
