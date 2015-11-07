@@ -50,6 +50,7 @@ public class ConfigMain extends Activity
 {
    Button configOkButton;
    Button configOkButton2;
+   Button newCommandButton;
    int mAppWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID;
    private EditText urlpl, urljs, connectionPW;
    public static ConfigData configData;
@@ -59,6 +60,7 @@ public class ConfigMain extends Activity
    public ConfigSwitchAdapter configSwitchAdapter;
    public ConfigLightsceneAdapter configLightsceneAdapter;
    public ConfigValueAdapter configValueAdapter;
+   public ConfigCommandAdapter configCommandAdapter;
 
    public int lsCounter = 0;
    public int lsSize = 0;
@@ -66,14 +68,15 @@ public class ConfigMain extends Activity
    public Handler waitAuth = new Handler();
    public Spinner spinnerSwitchCols;
    public Spinner spinnerValueCols;
+   public Spinner spinnerCommandCols;
    public RadioGroup radioLayoutLandscape ;
    public RadioGroup radioLayoutPortrait ;
+   public Boolean ownSocketStarted = false;
    
    @Override
    protected void onCreate(Bundle savedInstanceState)
    {
       super.onCreate(savedInstanceState);
-
       
       mContext = this;
       setResult(RESULT_CANCELED);
@@ -105,7 +108,6 @@ public class ConfigMain extends Activity
          if (obj instanceof ConfigDataOnly)
          {
             configDataOnly = (ConfigDataOnly) obj;
-            Log.i("layouttype1",Integer.toString(configDataOnly.layoutPortrait) + " - " + configDataOnly.layoutLandscape);
          }
       } 
       catch (FileNotFoundException e)
@@ -140,6 +142,12 @@ public class ConfigMain extends Activity
       spinnerValueCols.setAdapter(adapterValueCols);
       spinnerValueCols.setSelection(configDataOnly.valueCols);
       
+      spinnerCommandCols = (Spinner) this.findViewById(R.id.config_command_cols);   
+      ArrayAdapter<CharSequence> adapterCommandCols = ArrayAdapter.createFromResource(this, R.array.colnum, R.layout.spinner_item);
+      adapterCommandCols.setDropDownViewResource(R.layout.spinner_dropdown_item);
+      spinnerCommandCols.setAdapter(adapterCommandCols);
+      spinnerCommandCols.setSelection(configDataOnly.commandCols);
+     
       configData = new ConfigData();
       for (ConfigSwitchRow switchRow : configDataOnly.switchRows)
       {
@@ -193,18 +201,27 @@ public class ConfigMain extends Activity
       }
       radioLayoutLandscape = (RadioGroup) findViewById(R.id.layout_landscape);
       radioLayoutPortrait = (RadioGroup) findViewById(R.id.layout_portrait); 
-      Log.i("layouttype2",configDataOnly.layoutPortrait + " - " + configDataOnly.layoutLandscape);
       
       ((RadioButton)radioLayoutLandscape.getChildAt(configDataOnly.layoutLandscape)).setChecked(true);
       ((RadioButton)radioLayoutPortrait.getChildAt(configDataOnly.layoutPortrait)).setChecked(true);
    }
 
+   private Button.OnClickListener newCommandButtonOnClickListener = new Button.OnClickListener()
+   {
+      @Override
+      public void onClick(View arg0)
+      {
+         Log.i("onclick new line", newCommandButton.getText().toString());
+         configCommandAdapter.newLine();
+         setListViewHeightBasedOnChildren((ListView) findViewById(R.id.commands));
+      }
+   };  
    private Button.OnClickListener configOkButtonOnClickListener = new Button.OnClickListener()
    {
       @Override
       public void onClick(View arg0)
       {
-         //Log.i("text button", configOkButton.getText().toString());
+         Log.i("text button", configOkButton.getText().toString());
          if (configOkButton.getText().toString().equals(getText(R.string.getConfig)))
          {
             showFHEMunits();
@@ -215,50 +232,7 @@ public class ConfigMain extends Activity
          }
       }
    };
-
-   private Runnable runnableWaitAuth = new Runnable()
-   {
-      @Override
-      public void run()
-      {
-         ConfigMain.sendAlertMessage(getString(R.string.checkpw));
-         mySocket.socket.off("authenticated");
-         mySocket.socket.close();
-         mySocket = null;
-         
-      }
-   };
-
-   private Emitter.Listener authListener = new Emitter.Listener() 
-   {
-      @Override
-      public void call(Object... args)
-      {
-         runOnUiThread(new Runnable()
-         {
-            @Override
-            public void run()
-            {
-               waitAuth.removeCallbacks(runnableWaitAuth);
-               getAllSwitches(mySocket);
-               getAllLightscenes(mySocket);
-               getAllValues(mySocket);
-               
-               findViewById(R.id.layout_block).setVisibility(View.VISIBLE);
-               findViewById(R.id.switches_header1).setVisibility(View.VISIBLE);
-               findViewById(R.id.switches_header2).setVisibility(View.VISIBLE);
-               findViewById(R.id.lightscenes_header1).setVisibility(View.VISIBLE);
-               findViewById(R.id.lightscenes_header2).setVisibility(View.VISIBLE);
-               findViewById(R.id.values_header1).setVisibility(View.VISIBLE);
-               findViewById(R.id.values_header2).setVisibility(View.VISIBLE);
-               findViewById(R.id.okconfig2).setVisibility(View.VISIBLE);
-
-               configOkButton.setText(R.string.save);   
-            }
-         });
-      }
-   };     
-     
+ 
    private void showFHEMunits()
    {
       try
@@ -266,22 +240,35 @@ public class ConfigMain extends Activity
          URL url = new URL(urljs.getText().toString());
          url.toURI();
          try
-         {           
+         {   
+            String pw = connectionPW.getText().toString();
+            Boolean socketConnected = false;
             if (WidgetService.mySocket != null && WidgetService.mySocket.socket.connected())
             {
-               WidgetService.mySocket.socket.close();
+               if (urljs.getText().toString().equals(WidgetService.mySocket.url) && pw.equals(configDataOnly.connectionPW))
+               {
+                  socketConnected = true;
+                  mySocket = WidgetService.mySocket;
+                  buildOutput();
+               }
+               else
+               {   
+                  WidgetService.mySocket.socket.close();
+               }
             }
-            
-            mySocket = new MySocket(urljs.getText().toString());
-            
-            mySocket.socket.on("authenticated", authListener);
-            String pw = connectionPW.getText().toString();
-
-            if (!pw.equals(""))
+ 
+            if (!socketConnected)
             {
-               //Log.i("trace","send pw");
-               mySocket.socket.emit("authentication", pw);
-               waitAuth.postDelayed(runnableWaitAuth, 2000);
+               ownSocketStarted = true;
+               mySocket = new MySocket(urljs.getText().toString());
+               mySocket.socket.on("authenticated", authListener);
+   
+               if (!pw.equals(""))
+               {
+                  Log.i("send pw",pw);
+                  mySocket.socket.emit("authentication", pw);
+                  waitAuth.postDelayed(runnableWaitAuth, 2000);
+               }
             }
          }
          catch (Exception e)
@@ -289,7 +276,7 @@ public class ConfigMain extends Activity
             waitAuth.removeCallbacks(runnableWaitAuth);
             sendAlertMessage(getString(R.string.noconn) + ":\n- " + getString(R.string.urlcheck) + "!\n- " + getString(R.string.onlinecheck) + "?\n" + e);
          }
-         
+                 
          mySocket.socket.on(Socket.EVENT_CONNECT_ERROR, new Emitter.Listener()
          {
             @Override
@@ -316,7 +303,73 @@ public class ConfigMain extends Activity
          sendAlertMessage(getString(R.string.urlerr) + ":\n " + e);
       }
    }
-  
+   
+   private Runnable runnableWaitAuth = new Runnable()
+   {
+      @Override
+      public void run()
+      {
+         ConfigMain.sendAlertMessage(getString(R.string.checkpw));
+         mySocket.socket.off("authenticated");
+         mySocket.socket.close();
+         mySocket = null;
+         
+      }
+   };
+
+   private Emitter.Listener authListener = new Emitter.Listener() 
+   {
+      @Override
+      public void call(Object... args)
+      {
+         runOnUiThread(new Runnable()
+         {
+            @Override
+            public void run()
+            {
+               buildOutput();
+            }
+         });
+      }
+   }; 
+   
+   public void buildOutput()
+   {
+      waitAuth.removeCallbacks(runnableWaitAuth);
+      getAllSwitches(mySocket);
+      getAllLightscenes(mySocket);
+      getAllValues(mySocket);
+
+      findViewById(R.id.layout_block).setVisibility(View.VISIBLE);
+      findViewById(R.id.switches_header1).setVisibility(View.VISIBLE);
+      findViewById(R.id.switches_header2).setVisibility(View.VISIBLE);
+      findViewById(R.id.lightscenes_header1).setVisibility(View.VISIBLE);
+      findViewById(R.id.lightscenes_header2).setVisibility(View.VISIBLE);
+      findViewById(R.id.values_header1).setVisibility(View.VISIBLE);
+      findViewById(R.id.values_header2).setVisibility(View.VISIBLE);
+      findViewById(R.id.commands_header1).setVisibility(View.VISIBLE);
+      findViewById(R.id.commands_header2).setVisibility(View.VISIBLE);
+      findViewById(R.id.okconfig2).setVisibility(View.VISIBLE);
+      findViewById(R.id.newcommandline).setVisibility(View.VISIBLE);
+
+      configOkButton.setText(R.string.save);   
+
+      DragSortListView l = (DragSortListView) findViewById(R.id.commands);
+      configCommandAdapter = new ConfigCommandAdapter(mContext, R.layout.config_command_row);
+      l.setAdapter(configCommandAdapter);
+      l.setDropListener(onDropSwitch);
+      l.setFloatViewManager(switchFloatViewManager);
+      l.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
+      l.setDragHandleId(R.id.config_command_enabled);
+      
+      configCommandAdapter.initData(configDataOnly.commandRows);       
+      configCommandAdapter.notifyDataSetChanged();
+      setListViewHeightBasedOnChildren((ListView) findViewById(R.id.commands));            
+
+      newCommandButton = (Button) findViewById(R.id.newcommandline);
+      newCommandButton.setOnClickListener(newCommandButtonOnClickListener);      
+   }
+   
    public static void sendAlertMessage(final String msg)
    {
       AlertDialog.Builder dialog = new AlertDialog.Builder(mContext);
@@ -392,7 +445,7 @@ public class ConfigMain extends Activity
                      ArrayList<String> lightscenesMember = convertJSONarray((JSONArray) args[0]);
                      for (String unit : lightscenesMember)
                      {
-                        if (!unit.equals(""))
+                        if (!unit.equals("") && !unit.equals("Bye..."))
                         {   
                            lightsceneRowsTemp.add(new ConfigLightsceneRow(unit, unit, false, false, false));
                         }
@@ -445,16 +498,17 @@ public class ConfigMain extends Activity
                   setListViewHeightBasedOnChildren((ListView) findViewById(R.id.values));
                }
             });
-
          }
       });
    }
 
    private void saveConfig()
    {
-      mySocket.socket.disconnect();
-      mySocket.socket.close();
-
+      if (ownSocketStarted)
+      {
+         mySocket.socket.close();
+      }
+      
       AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(mContext);
 
       //RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.hellowidget_layout);
@@ -468,8 +522,10 @@ public class ConfigMain extends Activity
       configDataOnly.switchRows = configSwitchAdapter.getData();
       configDataOnly.lightsceneRows = configLightsceneAdapter.getData();
       configDataOnly.valueRows = configValueAdapter.getData();
+      configDataOnly.commandRows = configCommandAdapter.getData();
       configDataOnly.switchCols = spinnerSwitchCols.getSelectedItemPosition();
       configDataOnly.valueCols = spinnerValueCols.getSelectedItemPosition();
+      configDataOnly.commandCols = spinnerCommandCols.getSelectedItemPosition();
       
       RadioButton radioLayoutPortraitButton = (RadioButton) findViewById(radioLayoutPortrait.getCheckedRadioButtonId());
       RadioButton radioLayoutLandscapeButton = (RadioButton) findViewById(radioLayoutLandscape.getCheckedRadioButtonId());

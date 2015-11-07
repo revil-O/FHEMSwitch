@@ -1,9 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE xml>
+
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/main_layout"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:background="@drawable/myshape"
-    android:orientation="vertical"
+    android:orientation="horizontal"
     android:paddingBottom="8dp"
     android:paddingRight="8dp"
     android:paddingTop="8dp" >
@@ -79,5 +82,29 @@
         android:layout_marginLeft="8dp"
         android:visibility="gone"
         android:layout_toRightOf="@id/values1" />
+    <ListView
+        android:id="@+id/commands0"
+        android:layout_width="160dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_marginLeft="8dp"
+        android:visibility="gone"
+        android:layout_toRightOf="@id/values2" />
+    <ListView
+        android:id="@+id/commands1"
+        android:layout_width="160dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_marginLeft="8dp"
+        android:visibility="gone"
+        android:layout_toRightOf="@id/commands0" />
+    <ListView
+        android:id="@+id/commands2"
+        android:layout_width="160dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_marginLeft="8dp"
+        android:visibility="gone"
+        android:layout_toRightOf="@id/commands1" />
 
 </RelativeLayout>

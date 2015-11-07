@@ -16,7 +16,7 @@
     <string name="lightscenes">Scenarios</string>
     <string name="values">Values</string>
     <string name="values2">Values</string>
-    <string name="sel">Select</string>
+    <string name="sel">Sel</string>
     <string name="unit">Name - sort by drag &#038; drop</string>
     <string name="name">Displayed Name</string>
     <string name="header">Header</string>
@@ -28,7 +28,10 @@
     <string name="urlcheck">please check URL</string>
     <string name="fileerr">Error at saving configuration:</string>
     <string name="onlinecheck">is this device online</string>
-
+	<string name="commands">Custom commands</string>
+    <string name="commands2">FHEM command</string>
+    <string name="newline">+</string>
+    
     <string name="landscape">Layout Landscape</string>
     <string name="portrait">Layout Portrait</string>
     <string name="horizontal">horizontal</string>

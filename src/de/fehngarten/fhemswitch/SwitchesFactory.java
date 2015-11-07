@@ -72,7 +72,8 @@ class SwitchesFactory implements RemoteViewsFactory
       final Bundle bundle = new Bundle();
       bundle.putString(WidgetProvider.COMMAND, WidgetService.configData.switchesCols.get(colnum).get(position).activateCmd());
       bundle.putString(WidgetProvider.TYPE, "switch");
-      bundle.putString(WidgetProvider.UNIT, WidgetService.configData.switchesCols.get(colnum).get(position).unit);
+      bundle.putString(WidgetProvider.POS, Integer.toString(position));
+      bundle.putString(WidgetProvider.COL, Integer.toString(colnum));
       fillInIntent.putExtras(bundle);
       mView.setOnClickFillInIntent(R.id.switch_row, fillInIntent);
  

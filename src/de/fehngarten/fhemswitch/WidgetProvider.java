@@ -17,6 +17,7 @@ public class WidgetProvider extends AppWidgetProvider
    public static final String UNIT = "de.fehngarten.fhemswitch.UNIT";
    public static final String TYPE = "de.fehngarten.fhemswitch.TYPE";
    public static final String POS = "de.fehngarten.fhemswitch.POS";
+   public static final String COL = "de.fehngarten.fhemswitch.COL";
    public static final String URL = "de.fehngarten.fhemswitch.URL";
    public static final String OPEN_URL = "de.fehngarten.fhemswitch.OPEN_URL";
    private static Boolean startService = true;
@@ -49,20 +50,25 @@ public class WidgetProvider extends AppWidgetProvider
       }
       else if (intent.getAction().equals(SEND_FHEM_COMMAND))
       {
-         //Log.i("TYPE", intent.getExtras().getString(TYPE));
+         String type = intent.getExtras().getString(TYPE);
          String cmd = intent.getExtras().getString(COMMAND);
-         String device = "";
+         int actcol = 0;
          int position = -1;
-         if (intent.getExtras().getString(TYPE).equals("switch"))
+         if (type.equals("switch"))
          {
-            device = intent.getExtras().getString(UNIT);
+            position = Integer.parseInt(intent.getExtras().getString(POS));
+            actcol = Integer.parseInt(intent.getExtras().getString(COL));
          }
-         else if (intent.getExtras().getString(TYPE).equals("lightscene"))
+         else if (type.equals("lightscene"))
          {
-            Log.i("POS",intent.getExtras().getString(POS));
             position = Integer.parseInt(intent.getExtras().getString(POS));
          }
-         WidgetService.sendCommand(cmd,device,position);
+         else if (type.equals("command"))
+         {
+            position = Integer.parseInt(intent.getExtras().getString(POS));
+            actcol = Integer.parseInt(intent.getExtras().getString(COL));
+         }
+         WidgetService.sendCommand(cmd,position,type,actcol);
       }
       else if (intent.getAction().equals(OPEN_URL))
       {

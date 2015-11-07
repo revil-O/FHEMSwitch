@@ -7,11 +7,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.appwidget.AppWidgetManager;
@@ -22,10 +23,13 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.Configuration;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.view.View;
+import android.view.Display;
+import android.hardware.display.DisplayManager;
 import android.widget.RemoteViews;
 
 import com.github.nkzawa.emitter.Emitter;
@@ -48,7 +52,7 @@ public class WidgetService extends Service
    public static final String VALUE = "de.fehngarten.fhemswitch.VALUE";
    public static final String CONFIGFILE = "config.data";
 
-   public static MySocket mySocket;
+   public static MySocket mySocket = null;
 
    public static String websocketUrl;
    public static String fhemUrl;
@@ -58,16 +62,13 @@ public class WidgetService extends Service
    //public static List<MyValue> values = new ArrayList<MyValue>();
    public static int switchCols;
    public static int valueCols;
+   public static int commandCols;
 
    private static AppWidgetManager appWidgetManager;
    private static int[] allWidgetIds;
-   private static int[] layouts = new int[5];
+   private static int[] layouts = new int[3];
    private static Handler handler = new Handler();
    private static Context context;
-
-   private static ArrayList<String> switchesList = new ArrayList<String>();
-   private static ArrayList<String> lightScenesList = new ArrayList<String>();
-   private static ArrayList<String> valuesList = new ArrayList<String>();
 
    public static ConfigData configData;
    private ConfigDataOnly configDataOnly;
@@ -76,6 +77,11 @@ public class WidgetService extends Service
    public static PowerManager pm;
    private int layoutId;
 
+   private PendingIntent onClickPendingIntent;
+   public static MyLayout myLayout;
+   public static HashMap<String, ArrayList<Class<?>>> listViewServices;
+   public Boolean valuesRequested = false;
+   
    public void onCreate()
    {
       //Log.i("trace", "onCreate fired");
@@ -114,13 +120,39 @@ public class WidgetService extends Service
 
    public void doStart()
    {
-      //Log.i("trace", "onStart fired");
+      Log.i("trace", "doStart started");
+      valuesRequested = false;
       context = getApplicationContext();
       appWidgetManager = AppWidgetManager.getInstance(context);
       pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
       allWidgetIds = appWidgetManager.getAppWidgetIds(new ComponentName(context, WidgetProvider.class));
       //int rotation = getWindowManager().getDefaultDisplay().getRotation();
       int iLayout = 0;
+      
+      listViewServices = new HashMap<String, ArrayList<Class<?>>>();
+
+      ArrayList<Class<?>> classes = new ArrayList<Class<?>>();
+      classes.add(SwitchesService0.class);
+      classes.add(SwitchesService1.class);
+      classes.add(SwitchesService2.class);
+      listViewServices.put("switch",classes);
+      
+      classes = new ArrayList<Class<?>>();
+      classes.add(ValuesService0.class);
+      classes.add(ValuesService1.class);
+      classes.add(ValuesService2.class);
+      listViewServices.put("value",classes);
+      
+      classes = new ArrayList<Class<?>>();
+      classes.add(CommandsService0.class);
+      classes.add(CommandsService1.class);
+      classes.add(CommandsService2.class);
+      listViewServices.put("command",classes);
+      
+      classes = new ArrayList<Class<?>>();
+      classes.add(LightScenesService.class);
+      listViewServices.put("lightscene",classes);
+      
       try
       {
          FileInputStream f_in = openFileInput(WidgetService.CONFIGFILE);
@@ -138,11 +170,10 @@ public class WidgetService extends Service
             fhemUrl = configDataOnly.urlpl;
             switchCols = configDataOnly.switchCols;
             valueCols = configDataOnly.valueCols;
+            commandCols = configDataOnly.commandCols;
             layouts[Integer.valueOf(getString(R.string.LAYOUT_HORIZONTAL))] = R.layout.main_layout_horizontal;
             layouts[Integer.valueOf(getString(R.string.LAYOUT_VERTICAL))] = R.layout.main_layout_vertical;
-            layouts[Integer.valueOf(getString(R.string.LAYOUT_MIXED))] = R.layout.main_layout_mixed_0;
-            layouts[Integer.valueOf(getString(R.string.LAYOUT_MIXED)) + 1] = R.layout.main_layout_mixed_1;
-            layouts[Integer.valueOf(getString(R.string.LAYOUT_MIXED)) + 2] = R.layout.main_layout_mixed_2;
+            layouts[Integer.valueOf(getString(R.string.LAYOUT_MIXED))] = R.layout.main_layout_mixed;
             Configuration config = getResources().getConfiguration();
 
             if (config.orientation == Configuration.ORIENTATION_LANDSCAPE)
@@ -158,7 +189,12 @@ public class WidgetService extends Service
             {
                switchCols = 0;
                valueCols = 0;
+               commandCols = 0;
             }
+         }
+         else
+         {
+            throw new Exception("Config data corrupted");
          }
       }
       catch (FileNotFoundException e)
@@ -171,7 +207,8 @@ public class WidgetService extends Service
       }
 
       configData = new ConfigData();
-
+      
+      //-- control switches  ------------------------------------------------------------------
       for (ConfigSwitchRow switchRow : configDataOnly.switchRows)
       {
          if (switchRow.enabled)
@@ -180,25 +217,9 @@ public class WidgetService extends Service
          }
       }
 
-      int rowscount = configData.switches.size();
-      double rowspercol = Math.ceil((double) rowscount / (double) (switchCols + 1));
+      int switchCount = configData.switches.size();
 
-      configData.switchesCols.add(new ArrayList<MySwitch>());
-      configData.switchesCols.add(new ArrayList<MySwitch>());
-      configData.switchesCols.add(new ArrayList<MySwitch>());
-
-      int rownum = 0;
-      int colnum = 0;
-      for (MySwitch switchRow : configData.switches)
-      {
-         rownum = rownum + 1;
-         configData.switchesCols.get(colnum).add(switchRow);
-         if (rownum % rowspercol == 0)
-         {
-            colnum++;
-         }
-      }
-
+      //-- control lightscenes  ------------------------------------------------------------------
       MyLightScene newLightScene = null;
       for (ConfigLightsceneRow lightsceneRow : configDataOnly.lightsceneRows)
       {
@@ -212,6 +233,9 @@ public class WidgetService extends Service
          }
       }
 
+      int lightsceneCount = configData.lightScenes.itemsCount;
+ 
+      //-- control values  ------------------------------------------------------------------
       for (ConfigValueRow valueRow : configDataOnly.valueRows)
       {
          if (valueRow.enabled)
@@ -219,47 +243,73 @@ public class WidgetService extends Service
             configData.values.add(new MyValue(valueRow.name, valueRow.unit));
          }
       }
+      int valueCount = configData.values.size();
+ 
+      //-- control commands  ------------------------------------------------------------------
+      for (ConfigCommandRow commandRow : configDataOnly.commandRows)
+      {
+         if (commandRow.enabled)
+         {
+            configData.commands.add(new MyCommand(commandRow.name, commandRow.command, false));
+         }
+      } 
+      int commandCount = configData.commands.size();
+      myLayout = new MyLayout(iLayout, switchCols, valueCols, commandCols, switchCount, lightsceneCount, valueCount, commandCount);
 
-      configData.valuesCols.add(new ArrayList<MyValue>());
-      configData.valuesCols.add(new ArrayList<MyValue>());
-      configData.valuesCols.add(new ArrayList<MyValue>());
+      //-- control switches  ------------------------------------------------------------------
+      for (int i = 0; i <= switchCols; i++)
+      {   
+         configData.switchesCols.add(new ArrayList<MySwitch>());
+      }
 
-      rowscount = configData.values.size();
-      rowspercol = Math.ceil((double) rowscount / (double) (valueCols + 1));
+      int rownum = 0;
+      int colnum = 0;
+      for (MySwitch switchRow : configData.switches)
+      {
+         rownum = rownum + 1;
+         configData.switchesCols.get(colnum).add(switchRow);
+         if (rownum % myLayout.rowsPerCol.get("switch") == 0)
+         {
+            colnum++;
+         }
+      }
 
+      //-- control values  ------------------------------------------------------------------
+      for (int i = 0; i <= valueCols; i++)
+      {   
+         configData.valuesCols.add(new ArrayList<MyValue>());
+      }
       rownum = 0;
       colnum = 0;
       for (MyValue valueRow : configData.values)
       {
          rownum = rownum + 1;
          configData.valuesCols.get(colnum).add(valueRow);
-         if (rownum % rowspercol == 0)
+         if (rownum % myLayout.rowsPerCol.get("value") == 0)
          {
             colnum++;
          }
       }
-
-      switchesList = configData.getSwitchesList();
-      lightScenesList = configData.getLightScenesList();
-      valuesList = configData.getValuesList();
-
-      int iCorr = 0;
-      if (iLayout == Integer.valueOf(getString(R.string.LAYOUT_MIXED)))
+      
+      //-- control commands  ------------------------------------------------------------------
+      for (int i = 0; i <= commandCols; i++)
+      {   
+         configData.commandsCols.add(new ArrayList<MyCommand>());
+      }    
+      rownum = 0;
+      colnum = 0;
+      for (MyCommand commandRow : configData.commands)
       {
-         int switchesCount = switchesList.size();
-         int lightScenesCount = configData.lightScenes.itemsCount;
-         int valuesCount = valuesList.size();
-
-         if (lightScenesCount > switchesCount && lightScenesCount > valuesCount)
+         rownum = rownum + 1;
+         configData.commandsCols.get(colnum).add(commandRow);
+         if (rownum % myLayout.rowsPerCol.get("command") == 0)
          {
-            iCorr = 1;
-         }
-         else if (valuesCount > switchesCount && valuesCount > lightScenesCount)
-         {
-            iCorr = 2;
+            colnum++;
          }
       }
-      layoutId = layouts[iLayout + iCorr];
+      // -------------------------------------------------------------------------------
+
+      layoutId = layouts[iLayout];
       icons.put("on", R.drawable.on);
       icons.put("set_on", R.drawable.set_on);
       icons.put("off", R.drawable.off);
@@ -268,21 +318,7 @@ public class WidgetService extends Service
       icons.put("undefined", R.drawable.undefined);
       icons.put("toggle", R.drawable.undefined);
 
-      if (ConfigMain.mySocket != null && ConfigMain.mySocket.socket.connected())
-      {
-         ConfigMain.mySocket.socket.close();
-      }
-
-      if (mySocket != null)
-      {
-         //Log.i("trace", "reset socket");
-         mySocket.socket.disconnect();
-         mySocket.socket.close();
-         mySocket = null;
-      }
-
-      //initWidget();
-      handler.postDelayed(checkSocketTimer, 2000);
+      handler.postDelayed(checkSocketTimer, 500);
    }
 
    public void onConfigurationChanged(Configuration newConfig)
@@ -290,63 +326,39 @@ public class WidgetService extends Service
       doStart();
    }
 
-   public static void sendCommand(String cmd, String unit, int position)
+   public static void sendCommand(String cmd, int position, String type, int actCol)
    {
+      Log.i("sendCommand",cmd);
       mySocket.sendCommand(cmd);
-      if (unit.length() > 0)
+      if (type.equals("switch"))
       {
-         for (MySwitch mySwitch : configData.switches)
-         {
-            //Log.i("clicked unit",unit + " " + mySwitch.unit); 
-            if (mySwitch.unit.equals(unit))
-            {
-               mySwitch.setIcon("set_toggle");
-               //Log.i("trace","set toggle for " + unit);
-               //AppWidgetManager mgr = AppWidgetManager.getInstance(context);
-               int actCol = 0;
-               if (switchCols > 0)
-               {
-                  outerloop: for (ArrayList<MySwitch> listCol : configData.switchesCols)
-                  {
-                     for (MySwitch mySwitch1 : listCol)
-                     {
-                        if (mySwitch1.unit.equals(mySwitch.unit))
-                        {
-                           break outerloop;
-                        }
-                     }
-                     actCol++;
-                  }
-               }
+         configData.switchesCols.get(actCol).get(position).setIcon("set_toggle");
 
-               for (int id : allWidgetIds)
-               {
-                  switch (actCol)
-                  {
-                     case 0:
-                        appWidgetManager.notifyAppWidgetViewDataChanged(id, R.id.switches0);
-                        break;
-                     case 1:
-                        appWidgetManager.notifyAppWidgetViewDataChanged(id, R.id.switches1);
-                        break;
-                     case 2:
-                        appWidgetManager.notifyAppWidgetViewDataChanged(id, R.id.switches2);
-                        break;
-                  }
-               }
-               break;
-            }
+         for (int id : allWidgetIds)
+         {
+            appWidgetManager.notifyAppWidgetViewDataChanged(id, myLayout.layout.get("switch").get(actCol));
          }
       }
-      else if (position > -1)
+      else if (type.equals("lightscene"))
       {
          configData.lightScenes.items.get(position).activ = true;
 
          for (int id : allWidgetIds)
          {
-            appWidgetManager.notifyAppWidgetViewDataChanged(id, R.id.lightscenes);
+            appWidgetManager.notifyAppWidgetViewDataChanged(id, myLayout.layout.get("lightscene").get(0));
          }
          handler.postDelayed(deactLightscene, 500);
+      }
+      else if (type.equals("command"))
+      {
+         Log.i("col + pos",Integer.toString(actCol) + " + " + Integer.toString(position));
+         configData.commandsCols.get(actCol).get(position).activ = true;
+         for (int id : allWidgetIds)
+         {
+            appWidgetManager.notifyAppWidgetViewDataChanged(id, myLayout.layout.get("command").get(actCol));
+         }
+         Runnable deactCommand = new DeactCommand(actCol, position);
+         handler.postDelayed(deactCommand, 500);
       }
    }
 
@@ -364,198 +376,80 @@ public class WidgetService extends Service
 
          for (int id : allWidgetIds)
          {
-            appWidgetManager.notifyAppWidgetViewDataChanged(id, R.id.lightscenes);
+            appWidgetManager.notifyAppWidgetViewDataChanged(id, myLayout.layout.get("lightscene").get(0));
+         }
+      }
+   };
+   public static class DeactCommand implements Runnable
+   {
+      int actCol;
+      int actPos;
+  
+      public DeactCommand(int actCol, int actPos)
+      {
+         this.actCol = actCol;
+         this.actPos = actPos;
+      }
+      
+      public void run()
+      {
+         configData.commands.get(actPos).activ = false;
+         
+         for (int id : allWidgetIds)
+         {
+            appWidgetManager.notifyAppWidgetViewDataChanged(id, myLayout.layout.get("command").get(actCol));
          }
       }
    };
 
-   @SuppressWarnings("deprecation")
-   @SuppressLint("NewApi")
-   private void initSwitches(int widgetId)
-   {
-      //String methodname = "initSwitches";
-      //Log.d(CLASSNAME + methodname, "started");
-      RemoteViews mView = new RemoteViews(context.getPackageName(), layoutId);
-      if (switchesList.size() == 0)
-      {
-         //findViewById(R.id.values);
-         mView.setViewVisibility(R.id.switches0, View.GONE);
-         mView.setViewVisibility(R.id.switches1, View.GONE);
-         mView.setViewVisibility(R.id.switches2, View.GONE);
-      }
-      else
-      {
-         final Intent onItemClick = new Intent(context, WidgetProvider.class);
-         onItemClick.setData(Uri.parse(onItemClick.toUri(Intent.URI_INTENT_SCHEME)));
-         final PendingIntent onClickPendingIntent = PendingIntent.getBroadcast(context, 0, onItemClick,
-         PendingIntent.FLAG_UPDATE_CURRENT);
-
-         mView.setPendingIntentTemplate(R.id.switches0, onClickPendingIntent);
-         Intent switchIntent0 = new Intent(context, SwitchesService0.class);
-         switchIntent0.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetId);
-         switchIntent0.setData(Uri.parse(switchIntent0.toUri(Intent.URI_INTENT_SCHEME)));
-         mView.setRemoteAdapter(widgetId, R.id.switches0, switchIntent0);
-         mView.setViewVisibility(R.id.switches0, View.VISIBLE);
-
-         if (switchCols > 0)
-         {
-            Intent switchIntent1 = new Intent(context, SwitchesService1.class);
-            switchIntent1.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetId);
-            switchIntent1.setData(Uri.parse(switchIntent1.toUri(Intent.URI_INTENT_SCHEME)));
-            mView.setRemoteAdapter(widgetId, R.id.switches1, switchIntent1);
-            mView.setPendingIntentTemplate(R.id.switches1, onClickPendingIntent);
-            mView.setViewVisibility(R.id.switches1, View.VISIBLE);
-         }
-         else
-         {
-            mView.setViewVisibility(R.id.switches1, View.GONE);
-         }
-
-         if (switchCols > 1)
-         {
-            Intent switchIntent2 = new Intent(context, SwitchesService2.class);
-            switchIntent2.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetId);
-            switchIntent2.setData(Uri.parse(switchIntent2.toUri(Intent.URI_INTENT_SCHEME)));
-            mView.setRemoteAdapter(widgetId, R.id.switches2, switchIntent2);
-            mView.setPendingIntentTemplate(R.id.switches2, onClickPendingIntent);
-            mView.setViewVisibility(R.id.switches2, View.VISIBLE);
-         }
-         else
-         {
-            mView.setViewVisibility(R.id.switches2, View.GONE);
-         }
-      }
-      appWidgetManager.updateAppWidget(widgetId, mView);
-   }
-
-   @SuppressWarnings("deprecation")
-   @SuppressLint("NewApi")
-   private void initLightScenes(int widgetId)
-   {
-      //String methodname = "initLightScenes";
-      //Log.d(CLASSNAME + methodname, "started");
-      RemoteViews mView = new RemoteViews(context.getPackageName(), layoutId);
-      if (lightScenesList.size() == 0)
-      {
-         //findViewById(R.id.values);
-         mView.setViewVisibility(R.id.lightscenes, View.GONE);
-      }
-      else
-      {
-         mView.setViewVisibility(R.id.lightscenes, View.VISIBLE);
-         Intent lightSceneIntent = new Intent(context, LightScenesService.class);
-         lightSceneIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetId);
-         lightSceneIntent.setData(Uri.parse(lightSceneIntent.toUri(Intent.URI_INTENT_SCHEME)));
-         mView.setRemoteAdapter(widgetId, R.id.lightscenes, lightSceneIntent);
-
-         final Intent onItemClick = new Intent(context, WidgetProvider.class);
-         onItemClick.setData(Uri.parse(onItemClick.toUri(Intent.URI_INTENT_SCHEME)));
-         final PendingIntent onClickPendingIntent = PendingIntent.getBroadcast(context, 0, onItemClick,
-         PendingIntent.FLAG_UPDATE_CURRENT);
-         mView.setPendingIntentTemplate(R.id.lightscenes, onClickPendingIntent);
-      }
-      appWidgetManager.updateAppWidget(widgetId, mView);
-   }
-
-   @SuppressWarnings("deprecation")
-   @SuppressLint("NewApi")
-   private void initValues(int widgetId)
-   {
-      //String methodname = "initValues";
-      //Log.d(CLASSNAME + methodname, "started");
-
-      RemoteViews mView = new RemoteViews(context.getPackageName(), layoutId);
-      if (valuesList.size() == 0)
-      {
-         //findViewById(R.id.values);
-         mView.setViewVisibility(R.id.values0, View.GONE);
-         mView.setViewVisibility(R.id.values1, View.GONE);
-         mView.setViewVisibility(R.id.values2, View.GONE);
-      }
-      else
-      {
-
-         final Intent onItemClick = new Intent(context, WidgetProvider.class);
-         onItemClick.setData(Uri.parse(onItemClick.toUri(Intent.URI_INTENT_SCHEME)));
-         final PendingIntent onClickPendingIntent = PendingIntent.getBroadcast(context, 0, onItemClick,
-         PendingIntent.FLAG_UPDATE_CURRENT);
-
-         Intent valueIntent0 = new Intent(context, ValuesService0.class);
-         valueIntent0.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetId);
-         valueIntent0.setData(Uri.parse(valueIntent0.toUri(Intent.URI_INTENT_SCHEME)));
-         mView.setRemoteAdapter(widgetId, R.id.values0, valueIntent0);
-         mView.setPendingIntentTemplate(R.id.values0, onClickPendingIntent);
-         mView.setViewVisibility(R.id.values0, View.VISIBLE);
-
-         if (valueCols > 0)
-         {
-            Intent valueIntent1 = new Intent(context, ValuesService1.class);
-            valueIntent1.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetId);
-            valueIntent1.setData(Uri.parse(valueIntent1.toUri(Intent.URI_INTENT_SCHEME)));
-            mView.setRemoteAdapter(widgetId, R.id.values1, valueIntent1);
-            mView.setPendingIntentTemplate(R.id.values1, onClickPendingIntent);
-            mView.setViewVisibility(R.id.values1, View.VISIBLE);
-         }
-         else
-         {
-            mView.setViewVisibility(R.id.values1, View.GONE);
-         }
-
-         if (valueCols > 1)
-         {
-            Intent valueIntent2 = new Intent(context, ValuesService1.class);
-            valueIntent2.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetId);
-            valueIntent2.setData(Uri.parse(valueIntent2.toUri(Intent.URI_INTENT_SCHEME)));
-            mView.setRemoteAdapter(widgetId, R.id.values2, valueIntent2);
-            mView.setPendingIntentTemplate(R.id.values2, onClickPendingIntent);
-            mView.setViewVisibility(R.id.values2, View.VISIBLE);
-         }
-         else
-         {
-            mView.setViewVisibility(R.id.values2, View.GONE);
-         }
-      }
-      appWidgetManager.updateAppWidget(widgetId, mView);
-   }
-
    private void initListviews()
    {
+      final Intent onItemClick = new Intent(context, WidgetProvider.class);
+      onItemClick.setData(Uri.parse(onItemClick.toUri(Intent.URI_INTENT_SCHEME)));
+      onClickPendingIntent = PendingIntent.getBroadcast(context, 0, onItemClick,PendingIntent.FLAG_UPDATE_CURRENT);
+      RemoteViews mView = new RemoteViews(context.getPackageName(), layoutId);
+      mView.setViewVisibility(R.id.noconn, View.GONE);
+      for (int viewId : myLayout.goneViews)
+      {
+         mView.setViewVisibility(viewId, View.GONE);   
+      }
+
       for (int widgetId : allWidgetIds)
       {
-         initSwitches(widgetId);
-         initLightScenes(widgetId);
-         initValues(widgetId);
 
-         RemoteViews mView = new RemoteViews(context.getPackageName(), layoutId);
+         for (Entry<String, ArrayList<Integer>> entry : myLayout.layout.entrySet() )
+         {
+            String type = entry.getKey();
+            int actCol = 0;
+            for (int listviewId : entry.getValue())
+            {
+               //Log.i("initListview",type + " " + Integer.toString(actCol));
+               initListview(widgetId,mView,listviewId,actCol,type); 
+               actCol++;
+            }
+         }
+         
          Intent clickIntent = new Intent(this.getApplicationContext(), WidgetProvider.class);
-
          clickIntent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
          clickIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, allWidgetIds);
-
-         PendingIntent pendingIntent = PendingIntent.getBroadcast(getApplicationContext(), 0, clickIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+         PendingIntent pendingIntent = PendingIntent.getBroadcast(getApplicationContext(), 0, clickIntent,
+         PendingIntent.FLAG_UPDATE_CURRENT);
          mView.setOnClickPendingIntent(R.id.noconn, pendingIntent);
          appWidgetManager.updateAppWidget(widgetId, mView);
- 
+
       }
    }
 
-   private void initWidget()
+   private void initListview(int widgetId, RemoteViews mView, int listviewId, int actCol, String type)
    {
-
-      //String methodname = "initWidget";
-      //Log.d(CLASSNAME + methodname, "started");
-
-      if (mySocket != null)
-      {
-         mySocket.socket.disconnect();
-         mySocket.socket.close();
-         mySocket.socket.off();
-         mySocket = null;
-      }
-      initSocket();
-      initListviews();
+      mView.setPendingIntentTemplate(listviewId, onClickPendingIntent);
+      Intent switchIntent = new Intent(context, listViewServices.get(type).get(actCol));
+      switchIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetId);
+      switchIntent.setData(Uri.parse(switchIntent.toUri(Intent.URI_INTENT_SCHEME)));
+      mView.setRemoteAdapter(listviewId, switchIntent);
+      mView.setViewVisibility(listviewId, View.VISIBLE);      
    }
-
+ 
    public Runnable checkSocketTimer = new Runnable()
    {
       @Override
@@ -565,37 +459,74 @@ public class WidgetService extends Service
          //Log.d(CLASSNAME + methodname, "started");
          checkSocket();
          initListviews();
-
+         
+         if (!valuesRequested)
+         {
+            mySocket.requestValues(configData.getSwitchesList(),"once");
+            mySocket.requestValues(configData.getValuesList(),"once");
+            valuesRequested = true;
+         }
+         
          handler.removeCallbacks(this);
          handler.postDelayed(this, 100000);
       }
    };
 
-   @SuppressWarnings("deprecation")
-   private void checkSocket()
+   public void checkSocket()
    {
-      Boolean callInitSocket = false;
+      //Boolean callInitSocket = false;
       if (mySocket == null)
       {
-         //Log.i("trace", "socket is null");
-         callInitSocket = true;
+         if (isScreenOn(context))
+         {
+            initSocket();
+         }
       }
       else if (!mySocket.socket.connected())
       {
-         //Log.i("trace", "socket is disconnected");
-         mySocket.socket.close();
-         mySocket = null;
-         callInitSocket = true;
-      }
-      if (callInitSocket)
-      {
-         if (pm.isScreenOn())
+         if (isScreenOn(context))
          {
+            mySocket.socket.close();
+            mySocket = null;
             initSocket();
          }
       }
    }
 
+   public boolean isScreenOn(Context context)
+   {
+      if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH)
+      {
+         return isScreenOnNew(context);  
+      }
+      else
+      {
+         return isScreenOnOld(context);
+      }
+   }
+
+   @SuppressWarnings("deprecation")
+   public boolean isScreenOnOld(Context context)
+   {
+      PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
+      return pm.isScreenOn();
+   }
+   
+   @TargetApi(Build.VERSION_CODES.KITKAT_WATCH) 
+   public boolean isScreenOnNew(Context context)
+   {
+      DisplayManager dm = (DisplayManager) context.getSystemService(Context.DISPLAY_SERVICE);
+      boolean screenOn = false;
+      for (Display display : dm.getDisplays())
+      {
+         if (display.getState() != Display.STATE_OFF)
+         {
+            screenOn = true;
+         }
+      }
+      return screenOn;      
+   }
+   
    private void setVisibility(String type)
    {
       //Log.i("type of setVisibility",type); 
@@ -605,47 +536,26 @@ public class WidgetService extends Service
       if (type.equals("connected"))
       {
          mView.setViewVisibility(R.id.noconn, View.GONE);
-         if (switchesList.size() > 0)
+         for (Entry<String, ArrayList<Integer>> entry : myLayout.layout.entrySet() )
          {
-            mView.setViewVisibility(R.id.switches0, View.VISIBLE);
-            if (switchCols > 0)
+            for (int listviewId : entry.getValue())
             {
-               mView.setViewVisibility(R.id.switches1, View.VISIBLE);
-            }
-            if (switchCols > 1)
-            {
-               mView.setViewVisibility(R.id.switches2, View.VISIBLE);
-            }
-         }
-         if (lightScenesList.size() > 0)
-         {
-            mView.setViewVisibility(R.id.lightscenes, View.VISIBLE);
-         }
-
-         if (valuesList.size() > 0)
-         {
-            mView.setViewVisibility(R.id.values0, View.VISIBLE);
-            if (valueCols > 0)
-            {
-               mView.setViewVisibility(R.id.values1, View.VISIBLE);
-            }
-            if (valueCols > 1)
-            {
-               mView.setViewVisibility(R.id.values2, View.VISIBLE);
+               mView.setViewVisibility(listviewId, View.VISIBLE);
             }
          }
       }
       else
       {
-         mView.setViewVisibility(R.id.noconn, View.VISIBLE);
-         mView.setViewVisibility(R.id.switches0, View.GONE);
-         mView.setViewVisibility(R.id.switches1, View.GONE);
-         mView.setViewVisibility(R.id.switches2, View.GONE);
-         mView.setViewVisibility(R.id.lightscenes, View.GONE);
-         mView.setViewVisibility(R.id.values0, View.GONE);
-         mView.setViewVisibility(R.id.values1, View.GONE);
-         mView.setViewVisibility(R.id.values2, View.GONE);
          mView.setTextViewText(R.id.noconn, getString(R.string.noconn));
+         mView.setViewVisibility(R.id.noconn, View.VISIBLE);
+
+         for (Entry<String, ArrayList<Integer>> entry : myLayout.layout.entrySet() )
+         {
+            for (int listviewId : entry.getValue())
+            {
+               mView.setViewVisibility(listviewId, View.GONE);
+            }
+         }
       }
 
       for (int widgetId : allWidgetIds)
@@ -660,6 +570,7 @@ public class WidgetService extends Service
       Log.d(methodname, "started");
 
       mySocket = new MySocket(websocketUrl);
+      mySocket.socket.off(Socket.EVENT_CONNECT);
       mySocket.socket.on(Socket.EVENT_CONNECT, new Emitter.Listener()
       {
          @Override
@@ -670,15 +581,11 @@ public class WidgetService extends Service
             {
                mySocket.socket.emit("authentication", pw);
             }
-            Log.i("socket", "connected");
+            Log.i("WidgetService", "socket connected");
             try
             {
-               mySocket.requestValuesOnce(switchesList);
-               mySocket.requestValuesOnce(lightScenesList);
-               mySocket.requestValuesOnce(valuesList);
-               mySocket.requestValuesOnChange(switchesList);
-               mySocket.requestValuesOnChange(lightScenesList);
-               mySocket.requestValuesOnChange(valuesList);
+               mySocket.requestValues(configData.getSwitchesList(),"onChange");
+               mySocket.requestValues(configData.getValuesList(),"onChange");
                setVisibility("connected");
             }
             catch (NullPointerException e)
@@ -687,6 +594,7 @@ public class WidgetService extends Service
             }
          }
       });
+      mySocket.socket.off(Socket.EVENT_DISCONNECT);
       mySocket.socket.on(Socket.EVENT_DISCONNECT, new Emitter.Listener()
       {
          @Override
@@ -703,6 +611,7 @@ public class WidgetService extends Service
             }
          }
       });
+      mySocket.socket.off(Socket.EVENT_RECONNECT_FAILED);
       mySocket.socket.on(Socket.EVENT_RECONNECT_FAILED, new Emitter.Listener()
       {
          @Override
@@ -719,6 +628,7 @@ public class WidgetService extends Service
             }
          }
       });
+      mySocket.socket.off(Socket.EVENT_CONNECT_ERROR);
       mySocket.socket.on(Socket.EVENT_CONNECT_ERROR, new Emitter.Listener()
       {
          @Override
@@ -762,63 +672,28 @@ public class WidgetService extends Service
                   e.printStackTrace();
                }
 
-               if (switchesList.contains(unit))
+               int actCol = configData.setSwitchIcon(unit, value);
+               if (actCol > -1)
                {
-                  for (MySwitch mySwitch : configData.switches)
+                  for (int id : allWidgetIds)
                   {
-                     if (mySwitch.unit.equals(unit))
-                     {
-                        mySwitch.setIcon(value);
-
-                        for (int id : allWidgetIds)
-                        {
-                           appWidgetManager.notifyAppWidgetViewDataChanged(id, R.id.switches0);
-                           appWidgetManager.notifyAppWidgetViewDataChanged(id, R.id.switches1);
-                           appWidgetManager.notifyAppWidgetViewDataChanged(id, R.id.switches2);
-                        }
-                        break;
-                     }
+                     appWidgetManager.notifyAppWidgetViewDataChanged(id, myLayout.layout.get("switch").get(actCol));
                   }
                }
-               /*
-               else if (lightScenesList.contains(unit))
+ 
+               actCol = configData.setValue(unit, value);
+               if (actCol > -1)
                {
-                  for (MyLightScenes.MyLightScene lightScene : configData.lightScenes.lightScenes)
+                  for (int id : allWidgetIds)
                   {
-                     if (lightScene.unit.equals(unit))
-                     {
-                        lightScene.setActiv(value);
-                        for (int id : allWidgetIds)
-                        {
-                           appWidgetManager.notifyAppWidgetViewDataChanged(id, R.id.lightscenes);
-                        }
-                        break;
-                     }
-                  }
-               }
-               */
-               if (valuesList.contains(unit))
-               {
-                  for (MyValue myValue : configData.values)
-                  {
-                     if (myValue.unit.equals(unit))
-                     {
-                        myValue.value = value;
-
-                        for (int id : allWidgetIds)
-                        {
-                           appWidgetManager.notifyAppWidgetViewDataChanged(id, R.id.values0);
-                           appWidgetManager.notifyAppWidgetViewDataChanged(id, R.id.values1);
-                           appWidgetManager.notifyAppWidgetViewDataChanged(id, R.id.values2);
-                        }
-                        break;
-                     }
+                     appWidgetManager.notifyAppWidgetViewDataChanged(id, myLayout.layout.get("value").get(actCol));
                   }
                }
             }
          }
       });
 
+      mySocket.socket.off("fhemError");
       mySocket.socket.on("fhemError", new Emitter.Listener()
       {
          @Override
@@ -829,6 +704,7 @@ public class WidgetService extends Service
          }
       });
 
+      mySocket.socket.off("fhemConn");
       mySocket.socket.on("fhemConn", new Emitter.Listener()
       {
          @Override

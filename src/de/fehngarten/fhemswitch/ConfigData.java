@@ -14,16 +14,43 @@ public class ConfigData
    public List<MyValue> values = new ArrayList<MyValue>();
    public List<ArrayList<MyValue>> valuesCols= new ArrayList<ArrayList<MyValue>>();
    public List<MyValue> valuesDisabled = new ArrayList<MyValue>();
+   public List<MyCommand> commands = new ArrayList<MyCommand>();
+   public List<ArrayList<MyCommand>> commandsCols= new ArrayList<ArrayList<MyCommand>>();
+   //public List<MyCommand> commandsDisabled = new ArrayList<MyCommand>();
 
-   public MySwitch isInSwitches(String unit)
+   public int setSwitchIcon(String unit, String value)
    {
-      for (MySwitch mySwitch : switches)
+      for (int actCol = 0;actCol < switchesCols.size();actCol++)
       {
-         if (mySwitch.unit.equals(unit)) { return mySwitch; }
+         for (MySwitch mySwitch : switchesCols.get(actCol))
+         {
+            if (mySwitch.unit.equals(unit))
+            {
+               mySwitch.setIcon(value);
+               return actCol;
+            }
+         }
       }
-      return null; 
+      return -1; 
+   }
+ 
+   public int setValue(String unit, String value)
+   {
+      for (int actCol = 0;actCol < valuesCols.size();actCol++)
+      {
+         for (MyValue myValue : valuesCols.get(actCol))
+         {
+            if (myValue.unit.equals(unit))
+            {
+               myValue.setValue(value);
+               return actCol;
+            }
+         }
+      }
+      return -1; 
    }
 
+   /*  
    public MySwitch isInSwitchesDisabled(String unit)
    {
       for (MySwitch mySwitch : switchesDisabled)
@@ -32,7 +59,7 @@ public class ConfigData
       }
       return null;
    }
-
+   
    public MyValue isInValues(String unit)
    {
       for (MyValue myValue : values)
@@ -50,7 +77,7 @@ public class ConfigData
       }
       return null;
    }
-
+*/
    public ArrayList<String> getSwitchesList()
    {
       ArrayList<String> switchesList = new ArrayList<String>();
@@ -70,6 +97,16 @@ public class ConfigData
       }
       return valuesList;
    }
+ 
+   public ArrayList<String> getCommandsList()
+   {
+      ArrayList<String> commandsList = new ArrayList<String>();
+      for (MyCommand myCommand : commands)
+      {
+         commandsList.add(myCommand.name);
+      }
+      return commandsList;
+   }
 
    public ArrayList<String> getLightScenesList()
    {
@@ -83,14 +120,4 @@ public class ConfigData
       }
       return lightScenesList;
    }
-
-   public MyLightScene isInLightScenes(String unit)
-   {
-      for (MyLightScene myLightScene : lightScenes.lightScenes)
-      {
-         if (myLightScene.unit.equals(unit)) { return myLightScene; }
-      }
-      return null;
-   }
-
 }

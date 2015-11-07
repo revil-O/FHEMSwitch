@@ -7,9 +7,9 @@
 
     <CheckBox
         android:id="@+id/config_switch_enabled"
-        android:layout_width="60dp"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="10dp" />
+        android:layout_width="49dp"
+        android:layout_marginLeft="11dp"
+        android:layout_height="wrap_content" />
 
     <TextView
         android:id="@+id/config_switch_unit"
@@ -22,7 +22,7 @@
 
     <EditText
         android:id="@+id/config_switch_name"
-        android:layout_width="210dp"
+        android:layout_width="220dp"
         android:layout_height="wrap_content"
         android:ems="10"
         android:inputType="text" />

@@ -16,7 +16,7 @@
     <string name="lightscenes">Szenarios</string>
     <string name="values">Messwerte</string>
     <string name="values2">Werte</string>
-    <string name="sel">Auswahl</string>
+    <string name="sel">Aktiv</string>
     <string name="unit">Name - sort by drag &#038; drop</string>
     <string name="name">Angezeigter Name</string>
     <string name="header">Header</string>
@@ -28,7 +28,10 @@
     <string name="fileerr">Fehler beim Speichern der Konfiguration:</string>
     <string name="urlcheck">bitte URL prüfen</string>
     <string name="onlinecheck">ist dieses Geräte überhaupt Online</string>
-
+	<string name="commands">Freie Befehle</string>
+    <string name="commands2">FHEM Befehl</string>
+    <string name="newline">+</string>
+    
     <string name="landscape">Layout Landscape</string>
     <string name="portrait">Layout Portrait</string>
     <string name="horizontal">nebeneinander</string>

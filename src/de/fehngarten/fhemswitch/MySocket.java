@@ -14,7 +14,7 @@ public class MySocket
    private IO.Options options = new IO.Options();
 
    public Socket socket = null;
- 
+   public String url;
    public MySocket(String url)
    {
       Log.d(CLASSNAME, "started");
@@ -25,6 +25,7 @@ public class MySocket
          options.reconnection = false;
          socket = IO.socket(url, options);        
          socket.connect();
+         this.url = url;
       }
       catch (Exception e1)
       {
@@ -36,7 +37,7 @@ public class MySocket
          @Override
          public void call(Object... args)
          {
-            Log.e("socket error", args[0].toString());
+            Log.w("socket.io", "lost connection to server");
          }
       });
       
@@ -60,24 +61,24 @@ public class MySocket
       });
    }
 
-   public void requestValuesOnce(ArrayList<String> unitsList)
+   public void requestValues(ArrayList<String> unitsList, String type)
    {
       for (String unit : unitsList)
       {
-         socket.emit("getValueOnce", unit);
-      }
-   }
-
-   public void requestValuesOnChange(ArrayList<String> unitsList)
-   {
-      for (String unit : unitsList)
-      {
-         socket.emit("getValueOnChange", unit);
+         if (type.equals("once"))
+         { 
+            socket.emit("getValueOnce", unit);
+         }
+         else
+         {
+            socket.emit("getValueOnChange", unit);
+         }
       }
    }
 
    public void sendCommand(String cmd)
    {
+      //Log.i("mySocket command",cmd);
       socket.emit("commandNoResp", cmd);
    }
 }

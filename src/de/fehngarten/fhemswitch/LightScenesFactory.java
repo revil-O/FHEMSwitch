@@ -97,7 +97,11 @@ class LightScenesFactory implements RemoteViewsService.RemoteViewsFactory
 
          if (WidgetService.configData.lightScenes.items.get(position).activ)
          {
-            if (position == 0)
+            if (WidgetService.configData.lightScenes.itemsCount == 1)
+            {
+               mView.setInt(R.id.lightscene_name, "setBackgroundResource", R.drawable.activeboth);
+            }   
+            else if (position == 0)
             {
                mView.setInt(R.id.lightscene_name, "setBackgroundResource", R.drawable.activefirst);
             }   
@@ -112,7 +116,11 @@ class LightScenesFactory implements RemoteViewsService.RemoteViewsFactory
          }
          else
          {
-            if (position == 0)
+            if (WidgetService.configData.lightScenes.itemsCount == 1)
+            {
+               mView.setInt(R.id.lightscene_name, "setBackgroundResource", R.drawable.inactiveboth);
+            }   
+            else if (position == 0)
             {
                mView.setInt(R.id.lightscene_name, "setBackgroundResource", R.drawable.inactivefirst);
             }    
